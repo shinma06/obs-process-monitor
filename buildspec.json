@@ -1,0 +1,33 @@
+{
+  "name": "obs-process-monitor",
+  "version": "1.0.0",
+  "author": "",
+  "website": "",
+  "email": "",
+  "uiEnabled": true,
+  "dependencies": {
+    "obs-studio": {
+      "version": "30.2.2",
+      "repository": "obsproject/obs-studio",
+      "hash": {
+        "windows-x64": "unknown"
+      }
+    },
+    "prebuilt-dependencies": {
+      "version": "2024-03-19",
+      "baseUrl": "https://github.com/obsproject/obs-deps/releases/download/2024-03-19",
+      "label": "OBS Pre-Built Dependencies",
+      "hashes": {
+        "windows-x64": "58b5b75f624f4e34de33fc57f0daeaf4ca3cff2d7abbeac35264e16a59a0cad1"
+      }
+    },
+    "qt6": {
+      "version": "6.6.1",
+      "baseUrl": "https://github.com/obsproject/obs-deps/releases/download/2024-03-19",
+      "label": "Qt 6",
+      "hashes": {
+        "windows-x64": "3b38d0d87ff7d4a05bb2c3b88b7f9de0d8be5b13f4ba26a44ea93afb2d7d79de"
+      }
+    }
+  }
+}
