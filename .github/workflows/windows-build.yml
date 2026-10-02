@@ -1,0 +1,59 @@
+name: Windows plugin build
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-build:
+    name: windows-build (OBS 32.2.2, x64)
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Set up pinned CMake
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $archive = Join-Path $env:RUNNER_TEMP 'cmake-4.4.3-windows-x86_64.zip'
+          Invoke-WebRequest 'https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-windows-x86_64.zip' -OutFile $archive
+          $expected = '4d52ebab7193a698651639ed80d8d04fd903358843572cf44c7fd234cb7c26ab'
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'CMake download SHA256 mismatch.' }
+          Expand-Archive -LiteralPath $archive -DestinationPath $env:RUNNER_TEMP
+          (Join-Path $env:RUNNER_TEMP 'cmake-4.4.3-windows-x86_64/bin') | Add-Content $env:GITHUB_PATH
+      - name: Verify dependency hash rejection
+        run: cmake -P scripts/test-dependency-hash.cmake
+      - name: Configure from pinned dependencies
+        run: |
+          cmake --preset windows-x64 2>&1 | Tee-Object -FilePath out/configure.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build DLL
+        run: |
+          cmake --build --preset windows-x64 --parallel 2>&1 | Tee-Object -FilePath out/build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Package DLL and source identity
+        run: scripts/package-windows.ps1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: success()
+        with:
+          name: obs-process-monitor-windows-x64-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            out/package-*/*.zip
+            out/package-*/*.json
+            out/package-*/SHA256SUMS.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: windows-build-logs-${{ github.run_id }}
+          path: |
+            out/*.log
+            build_x64/CMakeFiles/CMakeConfigureLog.yaml
+          if-no-files-found: ignore
