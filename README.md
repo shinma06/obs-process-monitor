@@ -2,7 +2,9 @@
 
 Windowsのハードウェアリソースをリアルタイムに監視し、OBS標準のパネルと見分けがつかないほど自然なUIで表示するOBS Studioプラグインです。
 
-現在はプロトタイプです。実装済みの測定は **OBSプロセス自身のCPU使用率とRAM working set**、更新間隔は1秒です。システム全体・GPU等の監視や、OBSテーマへの自然な追従は今後の開発対象です。実機での検証済みリリースはまだありません。
+初期版では **システムのCPU/RAM、OBSプロセスのCPU/RAM、GPUごとの使用率と専用メモリ** を表示します。標準Qt WidgetsでOBSのテーマに追従し、計測はGUI外で約1秒間隔、dockを隠すと休止します。取得できない指標はゼロと区別します。
+
+対象は **Windows x64 / OBS Studio 32.2.2** です。[導入・使い方](docs/using-monitor.md)、[計測仕様と制限](docs/metrics.md)、[実機受入と確認条件](https://github.com/shinma06/obs-process-monitor/issues/8) を参照してください。検証用ZIPはGitHub Actionsのartifactで提供し、公開Releaseとinstallerはまだありません。
 
 ## 開発を始める
 
@@ -36,4 +38,4 @@ powershell -File scripts/package-windows.ps1
 
 ## ソース
 
-`plugin-main.cpp` はOBS moduleとdock、`ProcessMonitorWidget.cpp` / `.hpp` はWin32計測とQt Widgets表示、`plugin-macros.h.in` は生成ヘッダーを担当します。ソースはリポジトリ直下にあります。
+`plugin-main.cpp` はOBS moduleとdock、`ProcessMonitorWidget.cpp` / `.hpp` はQt Widgets表示、`src/metrics/` はWin32の計測、`src/ui/` はsnapshot workerと値の整形を担当します。言語ファイルは `data/locale/`、計算・worker・表示の試験は `tests/` にあります。
