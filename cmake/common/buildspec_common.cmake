@@ -1,5 +1,6 @@
 # Common build dependencies module
-# Modified 2026-10-02: verify cached archives, propagate the pinned toolset, and expose dependency build errors.
+# Modified 2026-10-03: bind dependency reuse/search to verified local prefixes; verify archives,
+# propagate the pinned toolset, and expose dependency build errors.
 
 include_guard(GLOBAL)
 
@@ -11,56 +12,23 @@ function(_verify_dependency_archive archive expected_hash)
   endif()
 endfunction()
 
-# _check_deps_version: Checks for obs-deps VERSION file in prefix paths
-function(_check_deps_version version)
+# Only the managed extraction can satisfy a pinned dependency, never an external prefix.
+function(_check_deps_version version prefix)
   set(found FALSE)
-
-  foreach(path IN LISTS CMAKE_PREFIX_PATH)
-    if(EXISTS "${path}/share/obs-deps/VERSION")
-      if(dependency STREQUAL qt6 AND NOT EXISTS "${path}/lib/cmake/Qt6/Qt6Config.cmake")
-        set(found FALSE)
-        continue()
-      endif()
-
-      file(READ "${path}/share/obs-deps/VERSION" _check_version)
-      string(REPLACE "\n" "" _check_version "${_check_version}")
-      string(REPLACE "-" "." _check_version "${_check_version}")
-      string(REPLACE "-" "." version "${version}")
-
-      if(_check_version VERSION_EQUAL version)
+  if(EXISTS "${prefix}/share/obs-deps/VERSION")
+    file(READ "${prefix}/share/obs-deps/VERSION" _check_version)
+    string(STRIP "${_check_version}" _check_version)
+    if(_check_version STREQUAL version)
+      if(NOT dependency STREQUAL qt6 OR EXISTS "${prefix}/lib/cmake/Qt6/Qt6Config.cmake")
         set(found TRUE)
-        break()
-      elseif(_check_version VERSION_LESS version)
-        message(
-          AUTHOR_WARNING
-          "Older ${label} version detected in ${path}: \n"
-          "Found ${_check_version}, require ${version}"
-        )
-        list(REMOVE_ITEM CMAKE_PREFIX_PATH "${path}")
-        list(APPEND CMAKE_PREFIX_PATH "${path}")
-        set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH})
-        continue()
-      else()
-        message(
-          AUTHOR_WARNING
-          "Newer ${label} version detected in ${path}: \n"
-          "Found ${_check_version}, require ${version}"
-        )
-        set(found TRUE)
-        break()
       endif()
     endif()
-  endforeach()
-
-  return(PROPAGATE found CMAKE_PREFIX_PATH)
+  endif()
+  return(PROPAGATE found)
 endfunction()
 
 # _setup_obs_studio: Create obs-studio build project, then build libobs and obs-frontend-api
 function(_setup_obs_studio)
-  if(NOT libobs_DIR)
-    set(_is_fresh --fresh)
-  endif()
-
   if(OS_WINDOWS)
     set(_cmake_generator "${CMAKE_GENERATOR}")
     set(_cmake_arch "-A ${arch},version=${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
@@ -77,7 +45,7 @@ function(_setup_obs_studio)
       "${CMAKE_COMMAND}" -S "${dependencies_dir}/${_obs_destination}" -B
       "${dependencies_dir}/${_obs_destination}/build_${arch}" -G ${_cmake_generator} "${_cmake_arch}"
       -DOBS_CMAKE_VERSION:STRING=3.0.0 -DENABLE_PLUGINS:BOOL=OFF -DENABLE_FRONTEND:BOOL=OFF
-      -DOBS_VERSION_OVERRIDE:STRING=${_obs_version} "-DCMAKE_PREFIX_PATH='${CMAKE_PREFIX_PATH}'" ${_is_fresh}
+      -DOBS_VERSION_OVERRIDE:STRING=${_obs_version} "-DCMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}" --fresh
       ${_cmake_extra}
     RESULT_VARIABLE _process_result
     COMMAND_ERROR_IS_FATAL ANY
@@ -125,6 +93,7 @@ function(_check_dependencies)
   file(READ "${CMAKE_CURRENT_SOURCE_DIR}/buildspec.json" buildspec)
 
   string(JSON dependency_data GET ${buildspec} dependencies)
+  set(pinned_prefixes)
 
   foreach(dependency IN LISTS dependencies_list)
     string(JSON data GET ${dependency_data} ${dependency})
@@ -150,28 +119,17 @@ function(_check_dependencies)
       string(REPLACE "-REVISION" "" file "${file}")
     endif()
 
-    if(EXISTS "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256")
-      file(
-        READ
-        "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256"
-        OBS_DEPENDENCY_${dependency}_${arch}_HASH
-      )
-    endif()
-
-    set(skip FALSE)
+    set(prefix "${dependencies_dir}/${destination}")
+    # Legacy checkout-wide markers do not establish which prefix was extracted.
+    # Store the verified archive identity inside the managed extraction instead.
     if(dependency STREQUAL prebuilt OR dependency STREQUAL qt6)
-      if(OBS_DEPENDENCY_${dependency}_${arch}_HASH STREQUAL ${hash})
-        _check_deps_version(${version})
-
-        if(found)
-          set(skip TRUE)
-        endif()
-      endif()
+      set(marker "${prefix}/.obs-plugin-dependency.sha256")
+    else()
+      set(marker "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256")
     endif()
-
-    if(skip)
-      message(STATUS "Setting up ${label} (${arch}) - skipped")
-      continue()
+    set(extracted_hash "")
+    if(EXISTS "${marker}")
+      file(READ "${marker}" extracted_hash)
     endif()
 
     if(dependency STREQUAL obs-studio)
@@ -197,37 +155,62 @@ function(_check_dependencies)
 
     _verify_dependency_archive("${dependencies_dir}/${file}" "${hash}")
 
-    if(NOT OBS_DEPENDENCY_${dependency}_${arch}_HASH STREQUAL ${hash})
-      file(REMOVE_RECURSE "${dependencies_dir}/${destination}")
+    set(reuse FALSE)
+    if(dependency STREQUAL prebuilt OR dependency STREQUAL qt6)
+      _check_deps_version("${version}" "${prefix}")
+      if(extracted_hash STREQUAL hash AND found)
+        set(reuse TRUE)
+      endif()
+    elseif(extracted_hash STREQUAL hash AND EXISTS "${prefix}")
+      set(reuse TRUE)
     endif()
 
-    if(NOT EXISTS "${dependencies_dir}/${destination}")
-      file(MAKE_DIRECTORY "${dependencies_dir}/${destination}")
+    if(NOT reuse)
+      file(REMOVE_RECURSE "${prefix}")
+      file(MAKE_DIRECTORY "${prefix}")
       if(dependency STREQUAL obs-studio)
         file(ARCHIVE_EXTRACT INPUT "${dependencies_dir}/${file}" DESTINATION "${dependencies_dir}")
       else()
-        file(ARCHIVE_EXTRACT INPUT "${dependencies_dir}/${file}" DESTINATION "${dependencies_dir}/${destination}")
+        file(ARCHIVE_EXTRACT INPUT "${dependencies_dir}/${file}" DESTINATION "${prefix}")
+        _check_deps_version("${version}" "${prefix}")
+        if(NOT found)
+          message(FATAL_ERROR "Pinned ${label} archive has an invalid VERSION or package layout: ${prefix}")
+        endif()
       endif()
+      file(WRITE "${marker}" "${hash}")
     endif()
 
-    file(WRITE "${dependencies_dir}/.dependency_${dependency}_${arch}.sha256" "${hash}")
-
-    if(dependency STREQUAL prebuilt)
-      list(APPEND CMAKE_PREFIX_PATH "${dependencies_dir}/${destination}")
-    elseif(dependency STREQUAL qt6)
-      list(APPEND CMAKE_PREFIX_PATH "${dependencies_dir}/${destination}")
+    # Register the pinned prefix on every configure, including cache reuse.
+    if(dependency STREQUAL prebuilt OR dependency STREQUAL qt6)
+      list(APPEND pinned_prefixes "${prefix}")
+      if(dependency STREQUAL qt6)
+        set(qt_prefix "${prefix}")
+      endif()
     elseif(dependency STREQUAL obs-studio)
       set(_obs_version ${version})
       set(_obs_destination "${destination}")
-      list(APPEND CMAKE_PREFIX_PATH "${dependencies_dir}")
+      list(APPEND pinned_prefixes "${dependencies_dir}")
     endif()
 
     message(STATUS "Setting up ${label} (${arch}) - done")
   endforeach()
 
+  list(PREPEND CMAKE_PREFIX_PATH ${pinned_prefixes})
   list(REMOVE_DUPLICATES CMAKE_PREFIX_PATH)
+  set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE STRING "CMake prefix search path" FORCE)
 
-  set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} CACHE PATH "CMake prefix search path" FORCE)
+  # find_package caches bypass prefix search. Discard stale Qt component locations;
+  # anchor the top-level packages to the verified Qt and locally built OBS trees.
+  get_cmake_property(cache_variables CACHE_VARIABLES)
+  foreach(variable IN LISTS cache_variables)
+    if(variable MATCHES "^Qt6.*_DIR$")
+      unset(${variable} CACHE)
+    endif()
+  endforeach()
+  set(Qt6_DIR "${qt_prefix}/lib/cmake/Qt6" CACHE PATH "Pinned Qt package" FORCE)
+  set(libobs_DIR "${dependencies_dir}/cmake" CACHE PATH "Locally built libobs package" FORCE)
+  set(obs-frontend-api_DIR "${dependencies_dir}/cmake" CACHE PATH "Locally built frontend package" FORCE)
 
+  # OBS has its own find_package/library cache: configure it fresh on every run.
   _setup_obs_studio()
 endfunction()

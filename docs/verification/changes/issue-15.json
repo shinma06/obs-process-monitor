@@ -1,0 +1,56 @@
+{
+  "issue": 15,
+  "integration": "develop",
+  "gui": "pending",
+  "gui_reason": "依存選択の修正で新しいDLLを生成する。旧744候補のGUI passは転用せず、QA #8でPMが新source SHA / DLL SHA256のロードと受入を確認する。",
+  "cases": [
+    {
+      "id": "pinned-prefix-reuse",
+      "steps": [
+        "cmake -P scripts/test-dependency-prefix.cmake",
+        "固定base db5216dd0a373ae1129564550acb8dc85e7eeb95 の helper に同じ試験を実行して既存不具合を再現する"
+      ],
+      "expected": "新旧/同版の外部prefixを先行/後置しても、検証済み指定prefixだけを採用する。旧marker・不正な抽出状態では再展開し、正しい再利用は再展開しない。Qt/OBS package cacheは固定先へ揃い、破損archiveは停止する。",
+      "status": "pass",
+      "evidence": "2026-10-03 build-agent / Windows / CMake 4.4.3。小さなローカルZIPと実CMakeCacheを使った28ケース成功。旧base helperは最初の新版外部prefix+一致旧markerでprebuilt/Qtともskipし、固定prefix順序の検査が失敗して再現。PR CIでも同じ試験を実行する。"
+    },
+    {
+      "id": "windows-build-package",
+      "steps": [
+        "fresh Windows CIで固定archiveを取得し、SHA256と実VERSION表記を照合する",
+        "DLL build、既存4 CTest、package、hash負試験を実行する"
+      ],
+      "expected": "OBS 32.2.2 / Qt 6.11.1と既定toolchain/依存hashで成功し、manifestと実DLLのSHA256が一致する。",
+      "status": "pending",
+      "evidence": "owner: build-agent。Draft PRのWindows CIを実行し、source SHA / DLL SHA256 / artifactを記録してQA #8へ渡す。"
+    },
+    {
+      "id": "harness-checks",
+      "steps": [
+        "python scripts/check.py"
+      ],
+      "expected": "既存harnessの構文・リンク・hooks等の検証が成功する。",
+      "status": "pass",
+      "evidence": "2026-10-03 build-agent / Windows local Python 3.11+。stage済み差分でscripts/check.pyが11 tests成功（POSIX専用1 skip）。最終PRのWindows/Linux CIは別途readbackする。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "固定HEAD / base db5216dd0a373ae1129564550acb8dc85e7eeb95をPM別セッションへ渡す"
+      ],
+      "expected": "PR #14のP2に対応する再利用/検索/cache修正と試験を確認し、未解決指摘がない。",
+      "status": "pending",
+      "evidence": "owner: PM separate session。writer停止後の固定revisionをレビューし、指摘解消・CI readback後にdevelop統合を判断する。"
+    },
+    {
+      "id": "new-dll-gui-acceptance",
+      "steps": [
+        "QA #8で新artifactのsource SHA / DLL SHA256を照合し、予約済みOBS環境へ配置する",
+        "新候補のロード・dock・計測・終了など必要GUI受入を実行する"
+      ],
+      "expected": "新しい識別DLLの必要Caseを満たし、main昇格PR #14の保留解除を判断できる。",
+      "status": "pending",
+      "evidence": "owner: PM / QA https://github.com/shinma06/obs-process-monitor/issues/8 。初期条件はGUI予約・新artifact識別完了。build-agentはGUI操作を行わず、旧744 DLLのpassを新候補へ転用しない。"
+    }
+  ]
+}

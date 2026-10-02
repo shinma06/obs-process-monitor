@@ -37,10 +37,12 @@ package スクリプトは追跡ファイルの未 commit 差分と configure �
 
 obs-deps と Qt の hash は [OBS 32.2.2 の公式 preset](https://github.com/obsproject/obs-studio/blob/32.2.2/CMakePresets.json) と一致します。helper の固定 commit、保持ライセンス、ローカル変更は [cmake/UPSTREAM.md](../cmake/UPSTREAM.md) に記録します。
 
-取得不能・SHA-256 不一致では configure を失敗させます。hash を回避したり `unknown` に変更せず、エラーで指定された archive のみを削除し、ネットワーク・取得元を確認して再取得します。保存済み archive を再展開するときも hash を検証します。負の試験は `cmake -P scripts/test-dependency-hash.cmake` です。runner image 自体はホスト側で更新されるため、toolset が利用不能なら明示的に失敗します。新しい版への切り替えは依存変更としてレビュー・Windows build・実機受入を行います。
+取得不能・SHA-256 不一致では configure を失敗させます。hash を回避したり `unknown` に変更せず、エラーで指定された archive のみを削除し、ネットワーク・取得元を確認して再取得します。保存済み archive は再利用時も hash を検証します。obs-deps / Qt は `.deps/` の指定 directory 内に書いた抽出 marker と VERSION を確認し、同版の外部 prefix や旧 checkout 共通 marker では展開を省略しません。指定 prefix を毎回検索順の先頭へ戻し、Qt / OBS の package cache も指定先へ揃えます。OBS の sub-build は毎回 `--fresh` で再構成し、以前の外部 library / package cache を引き継ぎません。通常の object build は差分 build のままです。`.deps/` 内の検証済み抽出物は手動で編集しないでください。
+
+archive hash の負の試験は `cmake -P scripts/test-dependency-hash.cmake`、prefix と marker / CMake cache の回帰試験は `cmake -P scripts/test-dependency-prefix.cmake` です。後者はローカル ZIP fixture を使う offline 試験で、Ninja / Make または Visual Studio の generator が必要ですが compiler と OBS は不要です。runner image 自体はホスト側で更新されるため、toolset が利用不能なら明示的に失敗します。新しい版への切り替えは依存変更としてレビュー・Windows build・実機受入を行います。
 
 ## CI と受入
 
-[Windows plugin build](../.github/workflows/windows-build.yml) は PR の実 HEAD を checkout し、fresh な runner で configure / DLL build / CTest / package / hash 不一致試験を行います。artifact は DLL ZIP、対応 source ZIP、manifest、配布物 hash、build/test logs を保持します。実パッチ版・runner image・source SHA を記録した再現手順であり、別日時・別 build path でも全バイトが一致する保証ではありません。
+[Windows plugin build](../.github/workflows/windows-build.yml) は PR の実 HEAD を checkout し、fresh な runner で configure / DLL build / CTest / package / hash 不一致・prefix 再利用試験を行います。artifact は DLL ZIP、対応 source ZIP、manifest、配布物 hash、build/test logs を保持します。実パッチ版・runner image・source SHA を記録した再現手順であり、別日時・別 build path でも全バイトが一致する保証ではありません。
 
 プラグインを実機に配置する前に [GUI 操作予約](operations.md) に従います。ビルド CI はロード・テーマ・DPI・録画時負荷・終了の pass を意味しません。
