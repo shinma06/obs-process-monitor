@@ -36,6 +36,30 @@ jobs:
         run: |
           cmake --preset windows-x64 2>&1 | Tee-Object -FilePath out/configure.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify resolved OBS and Qt packages
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $deps = (Resolve-Path '.deps').Path
+          $spec = Get-Content buildspec.json -Raw | ConvertFrom-Json
+          $qt = Join-Path $deps "obs-deps-qt6-$($spec.dependencies.qt6.version)-x64/lib/cmake"
+          $expected = @{
+            'libobs' = Join-Path $deps 'cmake'
+            'obs-frontend-api' = Join-Path $deps 'cmake'
+            'Qt6' = Join-Path $qt 'Qt6'
+            'Qt6Core' = Join-Path $qt 'Qt6Core'
+            'Qt6Widgets' = Join-Path $qt 'Qt6Widgets'
+          }
+          $cache = Get-Content build_x64/CMakeCache.txt
+          foreach ($package in $expected.Keys) {
+            $config = Join-Path $expected[$package] "$($package)Config.cmake"
+            if (-not (Test-Path -LiteralPath $config -PathType Leaf)) { throw "Missing pinned config: $package" }
+            $pattern = '^' + [regex]::Escape($package) + '_DIR:[^=]+='
+            $entries = @($cache | Where-Object { $_ -cmatch $pattern })
+            if ($entries.Count -ne 1) { throw "Missing or ambiguous package cache: $package" }
+            $actual = $entries[0] -replace $pattern, ''
+            if ([IO.Path]::GetFullPath($actual) -ne [IO.Path]::GetFullPath($expected[$package])) { throw "External package cache: $package = $actual" }
+            Write-Output "Verified pinned package: $package = $actual"
+          }
       - name: Build DLL
         run: |
           cmake --build --preset windows-x64 --parallel 2>&1 | Tee-Object -FilePath out/build.log

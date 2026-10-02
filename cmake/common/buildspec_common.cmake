@@ -208,8 +208,8 @@ function(_check_dependencies)
     endif()
   endforeach()
   set(Qt6_DIR "${qt_prefix}/lib/cmake/Qt6" CACHE PATH "Pinned Qt package" FORCE)
-  set(libobs_DIR "${dependencies_dir}/lib/cmake/libobs" CACHE PATH "Locally built libobs package" FORCE)
-  set(obs-frontend-api_DIR "${dependencies_dir}/lib/cmake/obs-frontend-api" CACHE PATH "Locally built frontend package" FORCE)
+  set(libobs_DIR "${dependencies_dir}/cmake" CACHE PATH "Locally built libobs package" FORCE)
+  set(obs-frontend-api_DIR "${dependencies_dir}/cmake" CACHE PATH "Locally built frontend package" FORCE)
 
   # OBS has its own find_package/library cache: configure it fresh on every run.
   _setup_obs_studio()
