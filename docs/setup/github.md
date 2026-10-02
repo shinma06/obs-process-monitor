@@ -43,9 +43,11 @@ Issueは具体作業、Projectは全体表示、Milestoneは到達目標にし�
 
 対象repositoryは `shinma06/obs-process-monitor`、統合branchはdevelopとmainです。初回tooling PRはmainへ統合し、専用同期PRでdevelopへ反映します。mainのdefault branch設定は維持します。
 
-実装したjob名は `harness-checks (ubuntu-latest)` と `harness-checks (windows-latest)` です。両方の実行成功後、branch rulesetへPR必須・会話解決・削除禁止・非fast-forward禁止・この2つのstrict required checksを設定します。developはsquash、mainはtoolingのsquashとpromotionのmergeを運用で区別します。未実装のcheck名は登録しません。
+実装したjob名は `harness-checks (ubuntu-latest)` と `harness-checks (windows-latest)` です。branch rulesetはPR必須・会話解決・削除禁止・非fast-forward禁止・この2つのstrict required checksを設定し、checkの発行元をGitHub Actionsへ固定します。製品のdevelop統合とmain toolingはsquash、main promotionとmain→developの同期は履歴を保持するmerge commitを使います。rulesetはsquash/mergeを許可し、この使い分けはレビューで確認します。未実装のcheck名は登録しません。
 
-このファイルはサーバー設定ではありません。初回導入時のruleset適用はpendingです。統合担当は実行実績を確認してから設定し、次のAPIをreadbackします。
+2026-10-02に両OSのCI成功を確認し、[main ruleset](https://github.com/shinma06/obs-process-monitor/rules/24364287) と [develop ruleset](https://github.com/shinma06/obs-process-monitor/rules/24364288) をactiveで適用しました。bypass actorは空です。両branchへの実適用もAPIでreadbackしました。同一アカウントの独立セッションレビューのため、別GitHubユーザーの必須Approve数は0、独立レビュー自体は運用上必須です。
+
+このファイルだけでは将来の設定状態を保証しません。統合担当は次のAPIで現行設定をreadbackします。
 
 ```bash
 gh api repos/shinma06/obs-process-monitor/rulesets

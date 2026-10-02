@@ -57,7 +57,7 @@ mergeとcleanupを分けて確認します。remote実ref、local branch、track
 
 - **develop**: 製品変更の通常統合先。必要CLI試験、独立コードレビュー、全Case追跡後にsquash。未実施GUIや環境blockedはQA Issueに初期条件・操作・期待・owner・再開条件を移して双方向linkを確認する。CLI試験失敗や未解決コード指摘は統合不可。
 - **main promotion**: 固定develop候補の全commit・必要Caseを同じ識別DLLで確認。GUIのpending/fail/blockedが残れば不可。merge commitで候補の履歴を保持する。
-- **main tooling**: GUI不要のdocs/scripts/CI/agent入口だけならmainへsquash。C++/CMake/buildspec等の製品差分の回避経路には使わない。候補固定前に専用PRでdevelopへ同期する。
+- **main tooling**: GUI不要のdocs/scripts/CI/agent入口だけならmainへsquash。C++/CMake/buildspec等の製品差分の回避経路には使わない。候補固定前に専用PRをmerge commitでdevelopへ同期し、mainの履歴を保持する。
 
 PR本文にIssue / Integration / Verification / GUI / GUI reasonを記録し、Caseは [verification](verification/README.md) に置く。develop PRはRefsを使い、残QAを自動closeしない。実装受入が完了しても親・QA・Milestoneを一括完了にしない。
 

@@ -8,8 +8,8 @@
       "id": "harness-checks",
       "steps": ["新規ファイルをstageする", "python scripts/check.pyをWindowsとLinux CIで実行する"],
       "expected": "構文・リンク・秘密候補・個人パス・差分と回帰試験が成功する",
-      "status": "pending",
-      "evidence": "2026-10-02 Windows/Python 3.12でcheck.py成功（9件、POSIX専用1件skip）。Linux CIはpending。最終HEADとCI結果はPRへ記録する"
+      "status": "pass",
+      "evidence": "2026-10-02 revision fc89976のcheck.pyとGitHub Actions run 37008938059がWindows/Linuxで成功。全10件、WindowsはPOSIX専用1件skip、LinuxはWindows専用3件skip。最終HEADの結果はPR #2を参照"
     },
     {
       "id": "git-hooks",
@@ -23,7 +23,7 @@
       "steps": ["lease期限切れ・token不一致・registry改変・別host・権限不整合を試験する", "Windowsではjunction拒否とprocess間ロックを試験する"],
       "expected": "旧ownerやprivate stateを保全し、不正な利用を拒否する",
       "status": "pass",
-      "evidence": "2026-10-02 Windows/Python 3.12のtest_harnessとtest_windows_stateで成功。POSIX権限試験はLinux CIで確認する"
+      "evidence": "2026-10-02 Windows/Python 3.12とWindows/Linux CIで成功。Windows CIの管理者実行で判明した新規record所有者の差異を修正し、排他的生成と明示owner/DACLの回帰試験も成功"
     },
     {
       "id": "client-entrypoints",
@@ -36,8 +36,8 @@
       "id": "independent-review",
       "steps": ["PRの固定HEAD/baseをwriterとは別セッションでレビューする"],
       "expected": "具体的な欠陥の解消と残条件を確認してから統合する",
-      "status": "pending",
-      "evidence": "次の担当: 独立レビュアー。prompts/review.mdとPRのrevisionを使用"
+      "status": "pass",
+      "evidence": "独立セッションharness_reviewがbase 8130830 / HEAD fc89976の全差分を承認、未解決指摘0。文書更新後の固定HEAD確認はPR #2に記録する"
     }
   ]
 }
