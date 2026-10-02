@@ -1,0 +1,43 @@
+{
+  "issue": 1,
+  "integration": "tooling",
+  "gui": "not-required",
+  "gui_reason": "開発ハーネスと運用文書のみ。C++/CMake/buildspecは変更しない。",
+  "cases": [
+    {
+      "id": "harness-checks",
+      "steps": ["新規ファイルをstageする", "python scripts/check.pyをWindowsとLinux CIで実行する"],
+      "expected": "構文・リンク・秘密候補・個人パス・差分と回帰試験が成功する",
+      "status": "pass",
+      "evidence": "2026-10-02 revision fc89976のcheck.pyとGitHub Actions run 37008938059がWindows/Linuxで成功。全10件、WindowsはPOSIX専用1件skip、LinuxはWindows専用3件skip。最終HEADの結果はPR #2を参照"
+    },
+    {
+      "id": "git-hooks",
+      "steps": ["test_git_hooksを使い捨てrepositoryで実行する"],
+      "expected": "Issue branchのcommit/pushが成功し、main commit・保護branch push・他branch push・dirty pushを拒否。他worktreeのhooksを切り替えない",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows上で使い捨てrepository/remoteの実commit・push・worktree分離の回帰試験が成功"
+    },
+    {
+      "id": "private-state",
+      "steps": ["lease期限切れ・token不一致・registry改変・別host・権限不整合を試験する", "Windowsではjunction拒否とprocess間ロックを試験する"],
+      "expected": "旧ownerやprivate stateを保全し、不正な利用を拒否する",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows/Python 3.12とWindows/Linux CIで成功。Windows CIの管理者実行で判明した新規record所有者の差異を修正し、排他的生成と明示owner/DACLの回帰試験も成功"
+    },
+    {
+      "id": "client-entrypoints",
+      "steps": ["AGENTS、CLAUDE import、Cursor rule、start/finishの各client入口を読む"],
+      "expected": "共通規約とOBS固有の目標・検証条件へ到達し、symlinkを必要としない",
+      "status": "pass",
+      "evidence": "導入担当が静的に経路を確認。他clientの新規sessionでの自動読込は未実施"
+    },
+    {
+      "id": "independent-review",
+      "steps": ["PRの固定HEAD/baseをwriterとは別セッションでレビューする"],
+      "expected": "具体的な欠陥の解消と残条件を確認してから統合する",
+      "status": "pass",
+      "evidence": "独立セッションharness_reviewがbase 8130830 / HEAD fc89976の全差分を承認、未解決指摘0。文書更新後の固定HEAD確認はPR #2に記録する"
+    }
+  ]
+}
