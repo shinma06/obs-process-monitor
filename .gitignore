@@ -20,3 +20,5 @@ CMakeUserPresets.json
 *.lib
 *.exp
 *.zip
+cmake/.CMakeBuildNumber
+release/

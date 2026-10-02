@@ -1,46 +1,48 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 4.4.3)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCOPE)
+project(${_name} VERSION ${_version} LANGUAGES C CXX)
 
-project(obs-process-monitor VERSION 1.0.0)
+if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+  message(FATAL_ERROR "The OBS plugin supports Windows x64 only.")
+endif()
+
+if(NOT MSVC OR NOT CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "19.51.36260.0")
+  message(FATAL_ERROR "Use the pinned MSVC 19.51.36260.0 toolchain; record and review toolchain upgrades.")
+endif()
 
 include(compilerconfig)
 include(defaults)
 include(helpers)
 
+add_library(resource-metrics STATIC src/metrics/MetricMath.cpp src/metrics/ResourceSampler.cpp)
+target_include_directories(resource-metrics PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(resource-metrics PRIVATE psapi pdh dxgi)
+
 add_library(${CMAKE_PROJECT_NAME} MODULE)
-
-# OBS core
-find_package(libobs REQUIRED)
-
-# OBS Frontend API (required for dock creation)
-find_package(obs-frontend-api REQUIRED)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::obs-frontend-api)
-
-# Qt (required for QWidget/QDockWidget)
-find_qt(COMPONENTS Widgets Core)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE Qt::Core Qt::Widgets)
+find_package(libobs 32.2.2 REQUIRED)
+find_package(obs-frontend-api 32.2.2 REQUIRED)
+find_package(Qt6 6.11.1 EXACT REQUIRED COMPONENTS Core Widgets)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs OBS::obs-frontend-api Qt6::Core Qt6::Widgets psapi resource-metrics)
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE NOMINMAX)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE plugin-main.cpp ProcessMonitorWidget.cpp ProcessMonitorWidget.hpp)
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
 set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 
-# Windows system libraries for process metrics
-if(OS_WINDOWS)
-  target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE psapi)
+execute_process(COMMAND git rev-parse HEAD WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  OUTPUT_VARIABLE PLUGIN_SOURCE_SHA OUTPUT_STRIP_TRAILING_WHITESPACE COMMAND_ERROR_IS_FATAL ANY)
+configure_file(plugin-macros.h.in plugin-macros.generated.h @ONLY)
+configure_file(cmake/build-info.json.in build-info.json @ONLY)
+set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
+
+include(CTest)
+if(BUILD_TESTING)
+  add_executable(metric-math-tests tests/metrics/MetricMathTests.cpp src/metrics/MetricMath.cpp)
+  target_include_directories(metric-math-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+  add_test(NAME metric-math COMMAND metric-math-tests)
+
+  add_executable(sampler-smoke tests/metrics/SamplerSmoke.cpp)
+  target_link_libraries(sampler-smoke PRIVATE resource-metrics)
+  add_test(NAME sampler-smoke COMMAND sampler-smoke)
+  set_tests_properties(sampler-smoke PROPERTIES TIMEOUT 60)
 endif()
-
-# Source files (at repo root; use src/ if you move them under src/)
-target_sources(
-  ${CMAKE_PROJECT_NAME}
-  PRIVATE
-    plugin-main.cpp
-    ProcessMonitorWidget.cpp
-    ProcessMonitorWidget.hpp)
-
-# Link core OBS
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
-
-# Generate plugin macros header (output in build dir)
-configure_file(plugin-macros.h.in ${CMAKE_BINARY_DIR}/plugin-macros.generated.h)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/plugin-macros.generated.h)
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}")
-
-set_target_properties_obs(${CMAKE_PROJECT_NAME} PROPERTIES UI_AUTOMOC ON UI_AUTORCC ON UI_AUTOUIC ON)

@@ -22,11 +22,17 @@ bootstrapは実行に使ったPythonをローカルGit設定に保存します�
 - [試験記録](docs/verification/README.md) / [GUI予約・引継ぎ](docs/operations.md)
 - [環境セットアップ](docs/setup/README.md) / [導入内容と差分](docs/inventory.md) / [初回導入記録](docs/harness-adoption.md)
 
-## ビルドの現在地
+## Windows ビルド
 
-このcheckout単体ではまだビルドできません。CMakeが参照する `cmake/common/bootstrap.cmake` とWindows用presetが欠けており、buildspecには未確定のhashがあります。旧READMEの公式templateへ上書きする手順は、検証済みの再現手順ではありません。
+OBS 32.2.2 / Qt 6.11.1 / Windows x64 を対象に、公式 OBS helper と SHA-256 固定の依存を使います。Visual Studio 2026（MSVC 19.51.36260.0 / toolset 14.51）、Windows SDK 10.0.26100.0、CMake 4.4.3 が必要です。
 
-先に専用Issueで公式OBS plugin templateとの整合、依存版・hash固定、Windows CI、DLL生成を整備します。その後にOBSへのロード・テーマ・DPI・dockの受入を行います。ハーネスのCI成功は製品buildやGUIの合格を意味しません。
+```powershell
+cmake --preset windows-x64
+cmake --build --preset windows-x64 --parallel
+powershell -File scripts/package-windows.ps1
+```
+
+配布物は `out/package-*/` に生成され、`build-manifest.json` に source SHA・DLL SHA-256・実コンパイラ版を含みます。GitHub Actions の Windows plugin build も同じコマンドを実行します。[詳しい手順と取得失敗時の扱い](docs/build-windows.md)、[Issue #4 の検証記録](docs/verification/changes/issue-4.json) を参照してください。ハーネス成功、製品 build 成功、OBS 実機受入はそれぞれ区別して記録します。
 
 ## ソース
 
