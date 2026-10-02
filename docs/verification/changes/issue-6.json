@@ -9,7 +9,7 @@
       "steps": ["C++17 Release相当でMetricMath.cppとMetricMathTests.cppをbuildして実行する"],
       "expected": "CPU時間差分・全CPU分母・初回/reset/失敗・RAM境界・GPU parser/adapter/engine集計が通る",
       "status": "pass",
-      "evidence": "2026-10-02 Windows x64 / 既存MinGW 13.2 / -O2 -Wall -Wextra -Werror -pedanticで65 checks pass。現在の固定HEADのMSVC/CI結果はPRで追跡。"
+      "evidence": "2026-10-02 Windows x64 / 既存MinGW 13.2 / -O2 -Wall -Wextra -Werror -pedanticで67 checks pass。現在の固定HEADのMSVC/CI結果はPRで追跡。"
     },
     {
       "id": "windows-live-sampling",

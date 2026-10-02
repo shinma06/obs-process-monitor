@@ -13,6 +13,8 @@
 
 参照: [GetSystemTimes](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getsystemtimes)、[GetProcessTimes](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-getprocesstimes)、[QueryPerformanceCounter](https://learn.microsoft.com/en-us/windows/win32/api/profileapi/nf-profileapi-queryperformancecounter)、[GetActiveProcessorCount](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-getactiveprocessorcount)、[GlobalMemoryStatusEx](https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-globalmemorystatusex)、[GetProcessMemoryInfo](https://learn.microsoft.com/en-us/windows/win32/api/psapi/nf-psapi-getprocessmemoryinfo)。
 
+processor group と performance counter の対応は Microsoft の [64 logical processor 超の計測解説](https://techcommunity.microsoft.com/blog/itopstalkblog/tough-questions-answered-how-to-use-more-than-64-logical-processors-on-a-single-/338402)、`_Total` は [全 core を合わせた CPU 監視の解説](https://learn.microsoft.com/en-us/troubleshoot/azure/virtual-machines/windows/troubleshoot-high-cpu-issues-azure-windows-vm)も参照してください。
+
 ## GPU と専用メモリ
 
 DXGI hardware adapter の LUID と GPU performance counter instance の LUID を照合します。software adapter は除外します。`id` は Windows session 内の識別子、`name` は UTF-8 です。adapter 番号は Task Manager の番号と同一とは限りません。

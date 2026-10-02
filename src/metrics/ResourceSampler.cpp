@@ -71,6 +71,13 @@ public:
     CounterQuery(const CounterQuery &) = delete;
     CounterQuery &operator=(const CounterQuery &) = delete;
 
+    void reset()
+    {
+        close();
+        status_ = SampleStatus::Unavailable;
+        retryAt_ = {};
+    }
+
     Metric<double> scalar()
     {
         const auto status = collect();
@@ -272,6 +279,7 @@ struct ResourceSampler::Impl {
         const DWORD processors = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
         if (processors != previousProcessorCount) {
             systemCpu.reset();
+            groupCpu.reset();
             previousProcessorCount = processors;
         }
         // GetSystemTimes only covers the caller's primary group on >64-CPU

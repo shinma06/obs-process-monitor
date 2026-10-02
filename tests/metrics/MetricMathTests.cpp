@@ -46,6 +46,10 @@ void systemCpuTests()
     absent(cpu.sample(SystemCpuTimes{1000, 2000, 1000}), SampleStatus::WarmingUp);
     cpu.reset();
     absent(cpu.sample(SystemCpuTimes{1001, 2001, 1001}), SampleStatus::WarmingUp);
+    cpu.reset();
+    absent(cpu.sample(SystemCpuTimes{0, 0, 0}), SampleStatus::WarmingUp);
+    const auto maximum = std::numeric_limits<std::uint64_t>::max();
+    percent(cpu.sample(SystemCpuTimes{maximum, maximum, maximum}), 50); // Sum exceeds uint64_t.
 }
 
 void processCpuTests()
