@@ -38,6 +38,10 @@ jobs:
         run: |
           cmake --build --preset windows-x64 --parallel 2>&1 | Tee-Object -FilePath out/build.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test C++ components and Windows sampler
+        run: |
+          ctest --test-dir build_x64 -C RelWithDebInfo --output-on-failure --no-tests=error 2>&1 | Tee-Object -FilePath out/test.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Package DLL and source identity
         run: scripts/package-windows.ps1
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
