@@ -10,6 +10,10 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Commit tracked changes before packaging an identified build.' }
     $buildInfo = Get-Content -LiteralPath 'build_x64/build-info.json' -Raw | ConvertFrom-Json
     if ($buildInfo.source_sha -ne $sourceSha) { throw 'Reconfigure after changing HEAD before packaging.' }
+    # A fresh configure alone can leave an older DLL behind. Always build the
+    # selected configuration before installing it under the current identity.
+    cmake --build --preset windows-x64 --parallel
+    if ($LASTEXITCODE -ne 0) { throw 'CMake build failed; no package was created.' }
     $spec = Get-Content -LiteralPath 'buildspec.json' -Raw | ConvertFrom-Json
     $artifactDir = Join-Path $ProjectRoot ('out/package-' + [guid]::NewGuid().ToString('N'))
     $stage = Join-Path $artifactDir 'stage'

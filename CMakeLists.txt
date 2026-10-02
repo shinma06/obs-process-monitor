@@ -7,6 +7,10 @@ if(NOT WIN32 OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
   message(FATAL_ERROR "The OBS plugin supports Windows x64 only.")
 endif()
 
+if(NOT MSVC OR NOT CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "19.51.36260.0")
+  message(FATAL_ERROR "Use the pinned MSVC 19.51.36260.0 toolchain; record and review toolchain upgrades.")
+endif()
+
 include(compilerconfig)
 include(defaults)
 include(helpers)
