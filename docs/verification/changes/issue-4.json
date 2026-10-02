@@ -1,0 +1,57 @@
+{
+  "issue": 4,
+  "integration": "develop",
+  "gui": "pending",
+  "gui_reason": "DLL build は本 Issue。OBS 実ロード・終了は QA #8（親 #5）へ移管し、PM の GUI lease と識別 DLL で確認。",
+  "cases": [
+    {
+      "id": "windows-fresh-build",
+      "steps": [
+        "fresh Windows checkout で cmake --preset windows-x64",
+        "cmake --build --preset windows-x64",
+        "scripts/package-windows.ps1"
+      ],
+      "expected": "OBS 32.2.2 / Qt 6.11.1 / MSVC 19.51 / SDK 10.0.26100.0 で DLL と source SHA / DLL SHA256 を生成する",
+      "status": "pass",
+      "evidence": "2026-10-02 GitHub Actions run 37012059846 / job 110853903922 が fresh checkout から configure、DLL build、package 成功。source 4e349737aaef60b8a76fb2e8e0b460a481f97888、DLL SHA256 dfc8095eac1b5f401319cbc1f9ae6bcd4eeb681a0a7d9d9b03bedd7ac9a0298c、package SHA256 f623058e77f8e594e042e628c8e48bb32dbac13bd2c0226caa050fa4b98890c3。artifact 11228442746 を取得してローカル hash を照合。MSVC 19.51.36260.0 / runner 20260925.250.1。続く packaging identity 修正後の最終 HEAD CI は PR #9 で確認する。"
+    },
+    {
+      "id": "dependency-integrity",
+      "steps": [
+        "cmake -P scripts/test-dependency-hash.cmake",
+        "fresh CI configure で全依存 archive の固定 hash を照合"
+      ],
+      "expected": "一致する archive のみ使用し、取得失敗・SHA256 不一致は停止する",
+      "status": "pass",
+      "evidence": "run 37012059846 で fresh な各依存 archive の取得・SHA256 検証成功。cmake -P scripts/test-dependency-hash.cmake が一致 fixture を許可し、不一致の保存済み fixture を明示エラーで拒否。"
+    },
+    {
+      "id": "harness-checks",
+      "steps": [
+        "python scripts/check.py"
+      ],
+      "expected": "既存ハーネスの構文・リンク・秘密候補・hooks 回帰が成功する",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows local check.py（10 tests / POSIX 専用1 skip）と PR #9 の Windows/Linux CI 成功。最終 HEAD は PR checks を参照。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "固定 HEAD/base を別セッションへ渡す"
+      ],
+      "expected": "コード・Case・依存ライセンス・配布構造を確認し未解決指摘がない",
+      "status": "pending",
+      "evidence": "owner: PM; next: 最終固定 revision レビュー。初回 4e34973 レビューで指摘された configure のみで旧 DLL が梱包され得る問題に対し package 内で install 前の build を追加。最終確認は pending。"
+    },
+    {
+      "id": "obs-load",
+      "steps": [
+        "識別済み package を OBS 32.2.2 の QA 環境に展開し、source SHA をログから照合",
+        "dock 表示と OBS 終了を確認"
+      ],
+      "expected": "DLL がロードされ、dock 登録・解放が成功する",
+      "status": "pending",
+      "evidence": "QA #8 https://github.com/shinma06/obs-process-monitor/issues/8 へ移管。owner: PM; next: 生成 artifact を受領して source/DLL hash を照合し GUI lease 下で確認。初期条件: Windows x64 / OBS 32.2.2 / 別 plugin 不在。期待: ロード成功、dock 表示、終了時 crash/残 worker なし。再開条件: 必要 build/レビュー済みの識別候補が揃うこと。"
+    }
+  ]
+}

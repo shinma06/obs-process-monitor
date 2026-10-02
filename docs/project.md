@@ -13,13 +13,13 @@ OBSにネイティブで備わっているパネルと思えるUIで、Windows�
 - ProcessMonitorWidget.cpp / .hpp: GetProcessTimesによるCPU時間差分、GetProcessMemoryInfoによるworking set。1秒間隔のQTimer。
 - CPUは論理processor数で正規化。RAMバーは総物理メモリに対するOBS working setの割合。
 - 固定style sheetとピクセル指定があり、テーマ・DPIへの自然な統合は未達。
-- buildspecのOBS 30.2.2 / Qt 6.6.1は既存入力であり、互換性試験済み版ではありません。
+- buildspecはOBS 32.2.2 / obs-deps 2026-07-15（Qt 6.11.1）を固定。Windows x64のbuild/実機受入結果はIssue別Caseに記録します。
 
 ## 開発と検証
 
 ハーネスはPython 3.11以上の標準ライブラリ、Git for Windows、Windows標準PowerShellを使用します。Linux CIでも共通部を確認します。入口は `python scripts/check.py`、診断は `python scripts/doctor.py`、hooksは `python scripts/bootstrap.py` です。
 
-製品の再現可能なbuild/testコマンドは未確立です。cmake/common/bootstrap.cmakeとCMakePresets.jsonがなく、依存hashにunknownが残っています。cmake --preset windows-x64を成功済み手順として案内しません。製品ソース・CMake・依存変更時はWindowsビルドと関連試験が必須で、基盤未整備中はblockedとして記録します。
+製品は [Windowsビルド手順](build-windows.md) の `cmake --preset windows-x64`、`cmake --build --preset windows-x64 --parallel`、`powershell -File scripts/package-windows.ps1` でbuild/packageします。製品ソース・CMake・依存変更時はWindowsのMSVCビルドと関連試験が必須です。実際のsource SHA、DLL SHA-256、CIの結果はIssue別Caseとartifact manifestで照合し、未実行の版をpassにしません。
 
 通常の統合先はdevelop、検証済み昇格先はmainです。初回ハーネスはmain向けtooling PRで導入し、統合後にmainからdevelopへの専用同期PRを作ります。branchの存在・同期・ruleset適用はIssue/PRでreadbackします。
 
