@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+source scripts/run-python.sh
+harness_python scripts/git_guard.py commit
