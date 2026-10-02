@@ -1,0 +1,96 @@
+{
+  "issue": 7,
+  "integration": "develop",
+  "gui": "required",
+  "gui_reason": "System/OBS/GPU の native dock UI・worker lifecycle・localeを変更。OBS実ロード・theme/DPI/操作と録画配信中の負荷はQA #8でPMが確認する。",
+  "references": [
+    "https://github.com/shinma06/obs-process-monitor/issues/5",
+    "https://github.com/shinma06/obs-process-monitor/issues/8",
+    "https://github.com/obsproject/obs-studio/blob/master/frontend/widgets/OBSBasicStats.cpp"
+  ],
+  "cases": [
+    {
+      "id": "harness-and-locale",
+      "steps": [
+        "新規ファイルをstageする",
+        "python scripts/check.py を実行する"
+      ],
+      "expected": "harnessとen-US/ja-JPのkey/placeholder対応が成功する",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows / Python 3.12: scripts/check.py成功。11件、POSIX専用1件skip。locale key/placeholder対応を含む。GUI passではない。"
+    },
+    {
+      "id": "synthetic-presentation-and-worker",
+      "steps": [
+        "CMakeでUI試験をbuildする",
+        "synthetic metric presentationとsnapshot workerのCTestを実行する"
+      ],
+      "expected": "単位・分母・初回/非対応/失敗・欠損total・異常数値を正しく表示し、GUI外で計測、pause/resumeでbaselineをreset、in-flight終了をjoin、失敗後回復する",
+      "status": "blocked",
+      "evidence": "2026-10-02 Qt-free SnapshotWorkerの合成試験をWindows/MinGW C++17 (-O2 -Wall -Wextra -Werror -pedantic)でbuild・実行し成功。Qt presentationのbuildは#4/#6統合待ち。実機値の正しさの証拠ではない。",
+      "next_owner": "ui-agent",
+      "next_action": "#4/#6のdevelop統合後に依存をmergeしてUI試験を配線・実行する"
+    },
+    {
+      "id": "windows-build",
+      "steps": [
+        "固定したWindows/OBS/Qt依存でnative DLLをbuildする"
+      ],
+      "expected": "C++/Qt/OBS の compile/link と package が成功する",
+      "status": "blocked",
+      "evidence": "#4/#6統合待ち",
+      "next_owner": "ui-agent",
+      "next_action": "build基盤とmetrics統合後に実行し版・source SHA・artifact識別を記録する"
+    },
+    {
+      "id": "native-theme-dpi-resize",
+      "steps": [
+        "QA #8で同一source SHA/DLL SHA-256のportable OBSを開く",
+        "標準Stats dockと並置し対応テーマを切り替える",
+        "Windows 100/150/200% DPI、狭幅・拡大・短い高さ・float/re-dockを試す",
+        "TabキーでGPU選択に到達し、複数adapterなら選択を変える"
+      ],
+      "expected": "OBS font/palette/spacingに追従し、数値と単位と状態が欠けず、縦scrollと折り返しで読める。テーマ変更後も固定色やfontを持たない",
+      "status": "pending",
+      "evidence": "PM専有のGUI leaseで未実施。引継ぎ先 https://github.com/shinma06/obs-process-monitor/issues/8",
+      "next_owner": "PM",
+      "next_action": "#8で固定candidate DLLをロードして実観測とtheme/DPI条件を記録する"
+    },
+    {
+      "id": "live-states-and-lifecycle",
+      "steps": [
+        "QA #8で初回計測・低負荷・高負荷・GPU/VRAM非対応または取得失敗を確認する",
+        "dockの非表示/再表示を繰り返す",
+        "OBSを終了して再起動する"
+      ],
+      "expected": "初回/非対応/取得不可を文字で区別し、欠損を0%にしない。CPUは再表示時の差分基準から再計測し、workerが安全に終了してhang/crashしない",
+      "status": "pending",
+      "evidence": "実機未実施。取得失敗fixtureは合成試験として別に扱う。引継ぎ先 #8",
+      "next_owner": "PM",
+      "next_action": "#8で実取得可能な状態を観測し未再現条件は明記する"
+    },
+    {
+      "id": "recording-streaming-overhead",
+      "steps": [
+        "QA #8で同条件の録画/配信をdock非表示/表示で比較する",
+        "OBS応答性とrender lag・CPU追加負荷を観測する"
+      ],
+      "expected": "1Hzのバックグラウンド計測でUIを阻害せず、追加負荷が小さく録画/配信の安定性を保つ",
+      "status": "pending",
+      "evidence": "実機未実施。採取時間/負荷値は計測後に記録する。引継ぎ先 #8",
+      "next_owner": "PM",
+      "next_action": "#8で固定DLLを用いたbefore/after条件・時間・実測値を記録する"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "writerとは別sessionに固定HEAD/baseとIssue受入を渡す"
+      ],
+      "expected": "未解決の具体的コード欠陥0、必要CLI試験の成功、残GUI CaseのQA引継ぎを確認する",
+      "status": "pending",
+      "evidence": "未実施",
+      "next_owner": "PM / independent reviewer",
+      "next_action": "依存統合・build・試験後の固定revisionを独立reviewする"
+    }
+  ]
+}
