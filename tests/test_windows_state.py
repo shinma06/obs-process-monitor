@@ -14,6 +14,18 @@ if os.name == 'nt':
 
 @unittest.skipUnless(os.name == 'nt', 'Native Windows ACL tests')
 class WindowsStateTest(unittest.TestCase):
+    def test_new_file_has_private_owner_and_exclusive_creation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            directory = windows_state.private_path(Path(tmp) / 'private', create=True)
+            path = directory / 'record.json'
+            with windows_state.record(path, 'x') as stream:
+                stream.write('original')
+            windows_state.private_path(path)  # Also checked on elevated Windows CI.
+            with self.assertRaises(ValueError):
+                with windows_state.record(path, 'x'):
+                    self.fail('Existing record must not be replaced')
+            self.assertEqual(path.read_text(), 'original')
+
     def test_rejects_junction_and_unsafe_directory_without_repair(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
