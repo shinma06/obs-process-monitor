@@ -26,10 +26,10 @@
         "synthetic metric presentationとsnapshot workerのCTestを実行する"
       ],
       "expected": "単位・分母・初回/非対応/失敗・欠損total・異常数値を正しく表示し、GUI外で計測、pause/resumeでbaselineをreset、in-flight終了をjoin、失敗後回復する",
-      "status": "blocked",
-      "evidence": "2026-10-02 Qt-free SnapshotWorkerの合成試験をWindows/MinGW C++17 (-O2 -Wall -Wextra -Werror -pedantic)でbuild・実行し成功。Qt presentationのbuildは#4/#6統合待ち。実機値の正しさの証拠ではない。",
+      "status": "pending",
+      "evidence": "2026-10-02 Windows/MinGWのQt-free worker合成試験は成功。develop 95d8cf9へ統合済みの#4/#6を取り込み、ui-presentation/ui-workerをCTestへ配線済み。固定HEADのWindows CIを次に実行する。",
       "next_owner": "ui-agent",
-      "next_action": "#4/#6のdevelop統合後に依存をmergeしてUI試験を配線・実行する"
+      "next_action": "固定HEADのWindows CIでQt presentationとworkerを含む全CTest結果を確認し、PR/Issueへ正確なrun/source情報を記録する"
     },
     {
       "id": "windows-build",
@@ -37,10 +37,10 @@
         "固定したWindows/OBS/Qt依存でnative DLLをbuildする"
       ],
       "expected": "C++/Qt/OBS の compile/link と package が成功する",
-      "status": "blocked",
-      "evidence": "#4/#6統合待ち",
+      "status": "pending",
+      "evidence": "OBS 32.2.2 / Qt 6.11.1 / MSVC 19.51.36260.0のbuild基盤と計測層を統合済み。UIを含むDLLの結果は固定HEADのCI実行待ち。",
       "next_owner": "ui-agent",
-      "next_action": "build基盤とmetrics統合後に実行し版・source SHA・artifact識別を記録する"
+      "next_action": "固定HEADのWindows build/packageとartifact identityを確認する。後続のCase整理はPM #12が行う"
     },
     {
       "id": "native-theme-dpi-resize",
