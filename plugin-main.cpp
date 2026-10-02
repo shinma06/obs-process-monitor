@@ -26,7 +26,7 @@ bool obs_module_load(void)
 
     obs_frontend_push_ui_translation(obs_module_get_string);
     auto *widget = new ProcessMonitorWidget(mainWindow);
-    const bool added = obs_frontend_add_dock_by_id(PLUGIN_NAME, "Process Monitor", widget);
+    const bool added = obs_frontend_add_dock_by_id(PLUGIN_NAME, obs_module_text("ProcessMonitor.DockTitle"), widget);
     obs_frontend_pop_ui_translation();
     if (!added) {
         delete widget;
@@ -43,6 +43,7 @@ void obs_module_unload(void)
     if (g_monitorWidget) {
         // Destroy plugin-owned content while its code is still loaded. QPointer also
         // covers OBS having already destroyed the dock during application shutdown.
+        g_monitorWidget->stopMonitoring();
         delete g_monitorWidget.data();
         obs_frontend_remove_dock(PLUGIN_NAME);
     }
