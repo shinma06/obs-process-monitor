@@ -1,0 +1,43 @@
+{
+  "issue": 8,
+  "integration": "develop",
+  "gui": "pending",
+  "gui_reason": "親 #5 の初期版を、#4/#6/#7 統合後の同一 DLL で実機受入する。PM が GUI lease を所有する。",
+  "cases": [
+    {
+      "id": "artifact-load-and-update",
+      "steps": ["CI の source SHA と package/DLL SHA-256 を照合する", "検証専用 portable OBS 32.2.2 に配置し、ログの source SHA とロードした DLL の hash を照合する", "システム/OBS/GPU の対象・単位と継続更新を観察する"],
+      "expected": "識別した DLL がロードされ、CPU/RAM/GPU の現在値と更新状態を読み取れる",
+      "status": "pending",
+      "evidence": "owner: PM; next: #4/#6/#7 の CLI 検証・レビュー済み候補を統合して受領する。別 profile の portable OBS を準備済み。"
+    },
+    {
+      "id": "native-theme-and-layout",
+      "steps": ["OBS 標準 dock とフォント・色・余白を並置比較する", "用意されている標準テーマを切り替える", "狭幅/拡大、float/re-dock、keyboard、言語を確認する", "100/150/200% の表示スケールで配置を確認し、OS DPI と Qt の試験用スケールを区別して記録する"],
+      "expected": "読めない文字、欠けた数値、固定色、到達不能な操作がなく、テーマと表示スケールへ追従する",
+      "status": "pending",
+      "evidence": "owner: PM; next: #7 の GUI 候補受領後に、条件別の実際の観察を記録する。未観察条件を pass と推定しない。"
+    },
+    {
+      "id": "sampling-states-and-adapters",
+      "steps": ["複数 adapter の切り替えを観察する", "初回計測・正常な 0・取得不可/非対応・失敗回復を、それぞれ実機と synthetic test の証拠に分けて確認する", "dock を隠して再表示し、古い区間を新しい現在値として表示しないことを確認する"],
+      "expected": "表示対象を区別でき、取得できない値を 0 と誤表示せず、安全に再開する",
+      "status": "pending",
+      "evidence": "owner: PM; next: #6/#7 の計算・worker・表示試験と実機観察を照合する。driver の停止/変更は行わない。"
+    },
+    {
+      "id": "recording-and-lifecycle",
+      "steps": ["空のシーンとミュート済み音声でローカル録画中の更新/応答性/負荷を確認する", "dock 切替と通常終了・再起動を確認する", "OBS ログで plugin のロード/解放、crash と残 worker の有無を確認する"],
+      "expected": "録画中にパネルが応答し、通常終了後に OBS プロセスが残らない",
+      "status": "pending",
+      "evidence": "owner: PM; next: 統合候補で実施する。検証用 scene の desktop/mic は mute を確認済み。録画の保存先は private QA directory。"
+    },
+    {
+      "id": "promotion-gate",
+      "steps": ["固定候補の全必要 Case と CI を読み戻す", "受入記録を別セッションでレビューする", "main 昇格 PR を merge commit で統合し、SHA/履歴/チェックを確認する"],
+      "expected": "未解決の不具合や必要 GUI の pending/fail/blocked を隠して昇格しない",
+      "status": "pending",
+      "evidence": "owner: PM; next: 実機受入と独立レビューが完了した候補のみ昇格する。"
+    }
+  ]
+}
