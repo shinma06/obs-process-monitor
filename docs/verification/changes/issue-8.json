@@ -2,7 +2,7 @@
   "issue": 8,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "PMが固定候補と同じlocaleで初期版の必要Caseを実OBS観察。実OS DPI拡張・配信等の未観察条件は#13でpendingとして追跡し、下記passに含めない。",
+  "gui_reason": "PMが固定候補と同じlocaleで必要Caseを実OBS観察。実OS150/200%はP1後にWindows設定で追加確認し100%へ復元。mixed-DPI移動・長時間配信等の未観察は#13でpending、passに含めない。",
   "cases": [
     {
       "id": "artifact-load-and-update",
@@ -25,7 +25,7 @@
       ],
       "expected": "読めない文字、欠けた数値、固定色、到達不能な操作がなく、テーマと表示スケールへ追従する",
       "status": "pass",
-      "evidence": "標準Stats並置、Yami dark/Default/Light、狭幅・拡大、float/re-dock、タブ化、GPU選択のTab/矢印操作を確認。実OS DPI100%の日本語、Qtプロセス限定150%の英語・200%の日本語で数値/単位を判読し、内容より短いviewportの縦scrollでGPUと更新時刻へ到達。実OS150/200%・mixed-DPIは未観察で#13へ移管。詳細 docs/verification/mvp-2026-10-02.md。"
+      "evidence": "標準Stats並置、Yami dark/Default/Light、狭幅・拡大、float/re-dock、タブ、Tab/矢印GPU選択を確認。10月2日に実OS100%の日本語、Qt限定150%の英語・200%の日本語、scrollを観察。10月3日にP1を受け、Windows設定で主モニター実OS150/200%を追加確認（Qt追加倍率1）、値/単位/更新、短いviewportのscroll、200% float/re-dockを観察。元の100%を読戻して復元済み。mixed-DPI移動のみ#13で未観察。詳細 docs/verification/mvp-2026-10-02.md。"
     },
     {
       "id": "sampling-states-and-adapters",
@@ -74,11 +74,27 @@
     "owner": "PM",
     "issue": "https://github.com/shinma06/obs-process-monitor/issues/13",
     "conditions": [
-      "実OS DPI 150/200%とmixed-DPI移動",
+      "mixed-DPIモニター間移動",
       "長時間・複雑scene・配信",
       "複数processor group実機",
       "GPU driver再初期化"
     ],
     "next_action": "専用環境と長時間試験枠を確保し、#13で候補を固定して検証する。初期版必要Caseとは別範囲。"
+  },
+  "native_os_dpi": {
+    "date": "2026-10-03",
+    "status": "pass",
+    "observer": "PM",
+    "original": "main monitor2: 100%, 2560x1440 landscape; secondary monitor1: 100%, 1080x1920 portrait",
+    "tested": [
+      100,
+      150,
+      200
+    ],
+    "qt_scale_factor": 1,
+    "restored": "Windows設定でmonitor2の100%・元の解像度/向きを読戻し。monitor1は変更なし",
+    "observed": "150%起動、起動中200%変更、数値/単位/更新、scrollによる全項目到達、200% float/re-dock、100%復元後更新、通常終了",
+    "limits": "mixed-DPIモニター移動は未実施。Qt限定倍率の前日試験とは別の実観察",
+    "review_finding": "https://github.com/shinma06/obs-process-monitor/pull/12#discussion_r4166694852"
   }
 }

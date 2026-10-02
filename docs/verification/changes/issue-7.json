@@ -2,7 +2,7 @@
   "issue": 7,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "QA #8で744a628候補のテーマ・操作・言語・Qt倍率・録画・終了を確認。実OS DPI拡張と配信等は#13にpendingとして移管。",
+  "gui_reason": "QA #8で744a628候補のテーマ・操作・言語・実OS100/150/200%・録画・終了を確認。mixed-DPI移動と長時間配信等は#13にpendingとして移管。",
   "references": [
     "https://github.com/shinma06/obs-process-monitor/issues/5",
     "https://github.com/shinma06/obs-process-monitor/issues/8",
@@ -43,12 +43,12 @@
       "steps": [
         "QA #8で同一source SHA/DLL SHA-256のportable OBSを開く",
         "標準Stats dockと並置し対応テーマを切り替える",
-        "初期版は実OS100%、Qtプロセス限定150/200%と狭幅・拡大・短いviewport・float/re-dockを確認。実OS150/200%とmixed-DPIは#13で追加検証する",
+        "Windows実OS100/150/200% DPI、狭幅・拡大・短いviewport・float/re-dockを試す。Qt限定スケールの補助試験は別に記録する",
         "TabキーでGPU選択に到達し、複数adapterなら選択を変える"
       ],
       "expected": "OBS font/palette/spacingに追従し、数値と単位と状態が欠けず、縦scrollと折り返しで読める。テーマ変更後も固定色やfontを持たない",
       "status": "pass",
-      "evidence": "固定source 744a6281ac298b7042b09a10cdef74e768dd080e、同package DLL/localeを用い、Yami Default/Lightの追従、標準Stats並置、日本語/英語、狭幅/拡大、float/re-dock、タブ化、縦scroll、Tab+矢印GPU選択を観察。150/200%はQtスケールで実OS DPI試験ではない。詳細 docs/verification/mvp-2026-10-02.md、未観察条件は#13。"
+      "evidence": "固定source744a6281ac298b7042b09a10cdef74e768dd080e、同package DLL/locale。10月2日にYami Default/Light、Stats並置、日本語/英語、狭幅/拡大、float/re-dock、タブ、scroll、Tab+矢印GPU選択、実OS100%とQt限定150/200%を観察。PR #12のP1後、10月3日にはWindows設定で主モニターを実OS150→200%に変更し、QT_SCALE_FACTOR=1で値/単位/更新、短いviewportのscroll、200%のfloat/re-dockを観察。元の100%へ復元・設定を読戻し、通常終了を確認。必要な実OS DPI CaseをQt試験で代替していない。詳細 docs/verification/mvp-2026-10-02.md。mixed-DPIモニター移動は未実施で#13。"
     },
     {
       "id": "live-states-and-lifecycle",
