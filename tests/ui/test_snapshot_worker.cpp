@@ -87,14 +87,21 @@ void testPauseResumeAndThread()
 void testInFlightGenerationAndStop()
 {
 	std::promise<void> entered;
+	std::promise<void> enteredSecond;
 	std::promise<void> release;
+	std::promise<void> releaseSecond;
 	auto releaseFuture = release.get_future().share();
+	auto releaseSecondFuture = releaseSecond.get_future().share();
 	std::atomic<int> calls{0};
 	monitor::SnapshotWorker worker([&](bool) {
 		const int call = ++calls;
 		if (call == 1) {
 			entered.set_value();
 			releaseFuture.wait();
+		}
+		if (call == 2) {
+			enteredSecond.set_value();
+			releaseSecondFuture.wait();
 		}
 		return snapshot(call == 1 ? 11.0 : 22.0);
 	}, 10ms);
@@ -107,6 +114,10 @@ void testInFlightGenerationAndStop()
 	worker.setActive(false);
 	worker.setActive(true);
 	release.set_value();
+	const bool secondStarted = enteredSecond.get_future().wait_for(2s) == std::future_status::ready;
+	const bool oldDiscarded = !worker.latest().snapshot;
+	releaseSecond.set_value();
+	require(secondStarted && oldDiscarded, "old generation must not publish while the resumed sample is in flight");
 	require(eventually([&] {
 		const auto update = worker.latest();
 		return update.snapshot && update.snapshot->systemCpuPercent.value == 22.0;
@@ -138,6 +149,7 @@ void testInFlightGenerationAndStop()
 void testFailureClearsSample()
 {
 	std::atomic<int> calls{0};
+	std::atomic<bool> recoveredWithReset{false};
 	monitor::SnapshotWorker worker([&](bool reset) {
 		const int call = ++calls;
 		if (call == 1)
@@ -145,7 +157,7 @@ void testFailureClearsSample()
 		if (call == 2)
 			throw std::runtime_error("synthetic acquisition failure");
 		if (call == 3)
-			require(reset, "a failed sample resets before recovery");
+			recoveredWithReset = reset;
 		return snapshot(25.0);
 	}, 50ms);
 	worker.setActive(true);
@@ -162,6 +174,7 @@ void testFailureClearsSample()
 		const auto latest = worker.latest();
 		return latest.snapshot && latest.snapshot->systemCpuPercent.value == 25.0;
 	}), "worker must recover from an acquisition failure");
+	require(recoveredWithReset, "a failed sample resets before recovery");
 	worker.stop();
 }
 
