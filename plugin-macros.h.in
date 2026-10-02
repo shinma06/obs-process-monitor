@@ -1,4 +1,5 @@
 #pragma once
 
-#define PLUGIN_NAME "obs-process-monitor"
+#define PLUGIN_NAME "@CMAKE_PROJECT_NAME@"
 #define PLUGIN_VERSION "@CMAKE_PROJECT_VERSION@"
+#define PLUGIN_SOURCE_SHA "@PLUGIN_SOURCE_SHA@"

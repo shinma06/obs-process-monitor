@@ -1,33 +1,39 @@
 {
-  "name": "obs-process-monitor",
-  "version": "1.0.0",
-  "author": "",
-  "website": "",
-  "email": "",
-  "uiEnabled": true,
   "dependencies": {
     "obs-studio": {
-      "version": "30.2.2",
-      "repository": "obsproject/obs-studio",
-      "hash": {
-        "windows-x64": "unknown"
+      "version": "32.2.2",
+      "baseUrl": "https://github.com/obsproject/obs-studio/archive/refs/tags",
+      "label": "OBS sources",
+      "hashes": {
+        "windows-x64": "f15f001f1fa526405318835f44f9910046502f496ebc3a30d5296a5018b831aa"
       }
     },
-    "prebuilt-dependencies": {
-      "version": "2024-03-19",
-      "baseUrl": "https://github.com/obsproject/obs-deps/releases/download/2024-03-19",
-      "label": "OBS Pre-Built Dependencies",
+    "prebuilt": {
+      "version": "2026-07-15",
+      "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
+      "label": "Pre-Built obs-deps",
       "hashes": {
-        "windows-x64": "58b5b75f624f4e34de33fc57f0daeaf4ca3cff2d7abbeac35264e16a59a0cad1"
+        "windows-x64": "6f90e9598fa10cff5ad23cdcfae49b87868c07bf896b02cd464582b4ce2f2ba9"
       }
     },
     "qt6": {
-      "version": "6.6.1",
-      "baseUrl": "https://github.com/obsproject/obs-deps/releases/download/2024-03-19",
-      "label": "Qt 6",
+      "version": "2026-07-15",
+      "baseUrl": "https://github.com/obsproject/obs-deps/releases/download",
+      "label": "Pre-Built Qt6 6.11.1",
       "hashes": {
-        "windows-x64": "3b38d0d87ff7d4a05bb2c3b88b7f9de0d8be5b13f4ba26a44ea93afb2d7d79de"
+        "windows-x64": "7c7f985711d80467bdc1795b6592275a27d5b0e5a2c7a61db1f2c1d08d6a5579"
       }
     }
-  }
+  },
+  "platformConfig": {
+    "macos": {
+      "bundleId": "com.obsprocessmonitor.plugin"
+    }
+  },
+  "name": "obs-process-monitor",
+  "displayName": "OBS Process Monitor",
+  "version": "1.0.0",
+  "author": "OBS Process Monitor contributors",
+  "website": "https://github.com/shinma06/obs-process-monitor",
+  "email": ""
 }
