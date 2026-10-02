@@ -1,0 +1,50 @@
+{
+  "issue": 6,
+  "integration": "develop",
+  "gui": "pending",
+  "gui_reason": "計測層単独はCLIで確認。OBSの表示・録画中負荷・終了はUI統合後に親#5のQA #8で確認する。",
+  "cases": [
+    {
+      "id": "metric-math",
+      "steps": ["C++17 Release相当でMetricMath.cppとMetricMathTests.cppをbuildして実行する"],
+      "expected": "CPU時間差分・全CPU分母・初回/reset/失敗・RAM境界・GPU parser/adapter/engine集計が通る",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows x64 / 既存MinGW 13.2 / -O2 -Wall -Wextra -Werror -pedanticで67 checks pass。現在の固定HEADのMSVC/CI結果はPRで追跡。"
+    },
+    {
+      "id": "windows-live-sampling",
+      "steps": ["WindowsでSamplerSmoke --require-gpu --samples 15を実行する", "CPU実負荷・reset・6回のsampler生成破棄を確認する"],
+      "expected": "CPU/RAMが有効、初回は値なし、2 adapterのGPU/専用メモリが回復可能に取得され、handleが増え続けない",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows x64の内蔵+単体GPU環境で成功。両adapterの専用メモリを取得、GPU true zeroと非zeroを確認。1 adapterの使用率は最初の2区間でUnavailableの後にOkへ回復。CPU実負荷検出とreset通過。6回の生成破棄前後handle数は132/132。初回286ms、通常14区間は0.685〜27.555ms（大半1.1ms未満）。これはCLI計測時間でありOBS録画負荷の合格証拠ではない。"
+    },
+    {
+      "id": "windows-msvc-build",
+      "steps": ["#4のbuild基盤を統合する", "固定HEADをWindows/MSVCでpluginと計測テストまでbuildしてCTestを実行する"],
+      "expected": "Windows plugin buildと計測テストが成功する",
+      "status": "pending",
+      "evidence": "owner: metrics-agent。#9のbuild基盤（develop b3274fa）を取り込み、CMake library/CTest接続とWindows CIでのCTest実行を追加。固定HEADのCI待ち。MinGW単独buildをMSVC plugin passとは扱わない。"
+    },
+    {
+      "id": "harness",
+      "steps": ["python scripts/check.pyを実行する"],
+      "expected": "文書・Case構文・既存harness回帰が通る",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows/Python 3.12でscripts/check.py成功。10 tests、POSIX専用1 skip。製品/GUI検証とは別の結果。"
+    },
+    {
+      "id": "independent-review",
+      "steps": ["固定HEAD/baseをwriterと別セッションでレビューする"],
+      "expected": "未解決の正確性・寿命・失敗回復の指摘がない",
+      "status": "pending",
+      "evidence": "owner: PM。Draft PRと固定revisionの準備後に独立reviewを割り当てる。"
+    },
+    {
+      "id": "obs-live-and-environment-coverage",
+      "steps": ["QA #8でUI統合後の固定DLL/source SHAを記録する", "OBS内表示、録画中の負荷、dock切替、終了を確認する", "複数processor group機とGPU driver再初期化の検証環境がある場合に追加確認する"],
+      "expected": "誤った0表示やadapter取り違えがなく、GUIを停止させずに実測値と取得不可を表す",
+      "status": "pending",
+      "evidence": "owner: PM/QA #8。parent #5との双方向追跡を継続。複数processor groupの実機、GPU driver再初期化、OBSへの実ロードは今回のCLI観測には含まれない。"
+    }
+  ]
+}

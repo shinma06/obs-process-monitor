@@ -16,6 +16,7 @@ Issue branch を checkout し、追跡ファイルを commit 済みにして実�
 ```powershell
 cmake --preset windows-x64
 cmake --build --preset windows-x64 --parallel
+ctest --test-dir build_x64 -C RelWithDebInfo --output-on-failure --no-tests=error
 powershell -File scripts/package-windows.ps1
 ```
 
@@ -40,6 +41,6 @@ obs-deps と Qt の hash は [OBS 32.2.2 の公式 preset](https://github.com/ob
 
 ## CI と受入
 
-[Windows plugin build](../.github/workflows/windows-build.yml) は PR の実 HEAD を checkout し、fresh な runner で configure / DLL build / package / hash 不一致試験を行います。artifact は DLL ZIP、対応 source ZIP、manifest、配布物 hash、build logs を保持します。実パッチ版・runner image・source SHA を記録した再現手順であり、別日時・別 build path でも全バイトが一致する保証ではありません。
+[Windows plugin build](../.github/workflows/windows-build.yml) は PR の実 HEAD を checkout し、fresh な runner で configure / DLL build / CTest / package / hash 不一致試験を行います。artifact は DLL ZIP、対応 source ZIP、manifest、配布物 hash、build/test logs を保持します。実パッチ版・runner image・source SHA を記録した再現手順であり、別日時・別 build path でも全バイトが一致する保証ではありません。
 
 プラグインを実機に配置する前に [GUI 操作予約](operations.md) に従います。ビルド CI はロード・テーマ・DPI・録画時負荷・終了の pass を意味しません。
