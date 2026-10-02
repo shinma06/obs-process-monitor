@@ -23,7 +23,7 @@
       "steps": ["#4のbuild基盤を統合する", "固定HEADをWindows/MSVCでpluginと計測テストまでbuildしてCTestを実行する"],
       "expected": "Windows plugin buildと計測テストが成功する",
       "status": "pending",
-      "evidence": "owner: metrics-agent/build-agent。#4のbuild基盤統合後にCMake wiringとCIを実行する。MinGW単独buildをMSVC plugin passとは扱わない。"
+      "evidence": "owner: metrics-agent。#9のbuild基盤（develop b3274fa）を取り込み、CMake library/CTest接続とWindows CIでのCTest実行を追加。固定HEADのCI待ち。MinGW単独buildをMSVC plugin passとは扱わない。"
     },
     {
       "id": "harness",
