@@ -30,6 +30,8 @@ jobs:
           (Join-Path $env:RUNNER_TEMP 'cmake-4.4.3-windows-x86_64/bin') | Add-Content $env:GITHUB_PATH
       - name: Verify dependency hash rejection
         run: cmake -P scripts/test-dependency-hash.cmake
+      - name: Verify pinned dependency selection and cache reuse
+        run: cmake -P scripts/test-dependency-prefix.cmake
       - name: Configure from pinned dependencies
         run: |
           cmake --preset windows-x64 2>&1 | Tee-Object -FilePath out/configure.log
