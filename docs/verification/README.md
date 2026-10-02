@@ -14,3 +14,7 @@ Caseを `docs/verification/changes/issue-N.json` に記録します。Issueは�
 Windows/OBS版、source SHA、DLL SHA-256、テーマ/DPI、手順、期待、実際、観察者を残します。スクリーンショットから個人の配信情報を除きます。GUI操作には [lease](../operations.md) が必要です。
 
 developは必要CLI試験・独立レビュー・Case追跡後に統合し、GUI未完了はQA Issueへ双方向linkで引き継ぎます。main promotionは固定develop候補の全commit・必要Caseを同一DLLでpassにしてから行います。候補後の製品差分は再build・再確認が必要です。
+
+製品候補のsource SHAと、後から観察を記録する文書HEADは別に残します。文書だけの追記であってもCIが再生成した別DLLは実機受入済みになりません。昇格時は候補以降の全変更を独立レビューし、製品・build・依存・localeの差分ゼロを確認したうえで、受入に使った元package/source ZIP/DLLのhashとCI runを指定します。表示倍率は実OS DPIとプロセス限定Qtスケールを区別し、物理的なmixed-DPI環境の未観察を隠しません。
+
+初期版の実際の結果は [2026-10-02/03受入記録](mvp-2026-10-02.md) を参照してください。実OS100/150/200%はWindows表示設定で確認し、Qt限定スケールの補助試験と区別しています。短時間ローカル録画を確認済みで、mixed-DPI移動・長時間配信等の未観察条件は [#13](https://github.com/shinma06/obs-process-monitor/issues/13) でpendingとして追跡します。

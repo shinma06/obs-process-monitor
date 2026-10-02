@@ -1,0 +1,100 @@
+{
+  "issue": 8,
+  "integration": "develop",
+  "gui": "pass",
+  "gui_reason": "PMが固定候補と同じlocaleで必要Caseを実OBS観察。実OS150/200%はP1後にWindows設定で追加確認し100%へ復元。mixed-DPI移動・長時間配信等の未観察は#13でpending、passに含めない。",
+  "cases": [
+    {
+      "id": "artifact-load-and-update",
+      "steps": [
+        "CI の source SHA と package/DLL SHA-256 を照合する",
+        "検証専用 portable OBS 32.2.2 に配置し、ログの source SHA とロードした DLL の hash を照合する",
+        "システム/OBS/GPU の対象・単位と継続更新を観察する"
+      ],
+      "expected": "識別した DLL がロードされ、CPU/RAM/GPU の現在値と更新状態を読み取れる",
+      "status": "pass",
+      "evidence": "2026-10-02 PM、Windows11 x64、portable OBS32.2.2/Qt6.11.1。source 744a6281ac298b7042b09a10cdef74e768dd080e、DLL 2a0c65542764933cf37fd9559db3222bb8b3c7a1bc95ce1e6a619a334b743a94、package/manifest/localeを照合。実ロードmoduleとログのsourceが一致し、System/OBS/GPUの約1Hz更新・単位を観察。Windows run37015281867全4 CTest/build/package成功。詳細 docs/verification/mvp-2026-10-02.md。"
+    },
+    {
+      "id": "native-theme-and-layout",
+      "steps": [
+        "OBS 標準 dock とフォント・色・余白を並置比較する",
+        "用意されている標準テーマを切り替える",
+        "狭幅/拡大、float/re-dock、keyboard、言語を確認する",
+        "100/150/200% の表示スケールで配置を確認し、OS DPI と Qt の試験用スケールを区別して記録する"
+      ],
+      "expected": "読めない文字、欠けた数値、固定色、到達不能な操作がなく、テーマと表示スケールへ追従する",
+      "status": "pass",
+      "evidence": "標準Stats並置、Yami dark/Default/Light、狭幅・拡大、float/re-dock、タブ、Tab/矢印GPU選択を確認。10月2日に実OS100%の日本語、Qt限定150%の英語・200%の日本語、scrollを観察。10月3日にP1を受け、Windows設定で主モニター実OS150/200%を追加確認（Qt追加倍率1）、値/単位/更新、短いviewportのscroll、200% float/re-dockを観察。元の100%を読戻して復元済み。mixed-DPI移動のみ#13で未観察。詳細 docs/verification/mvp-2026-10-02.md。"
+    },
+    {
+      "id": "sampling-states-and-adapters",
+      "steps": [
+        "複数 adapter の切り替えを観察する",
+        "初回計測・正常な 0・取得不可/非対応・失敗回復を、それぞれ実機と synthetic test の証拠に分けて確認する",
+        "dock を隠して再表示し、古い区間を新しい現在値として表示しないことを確認する"
+      ],
+      "expected": "表示対象を区別でき、取得できない値を 0 と誤表示せず、安全に再開する",
+      "status": "pass",
+      "evidence": "実OBSで内蔵/単体GPUの選択・異なる容量/使用量、内蔵GPUの真の0.0%を観察。非表示/再表示時は計測中表示となり旧fillを残さず新しい区間へ復帰。取得不可・非対応・stale・異常数値・例外後回復は同候補Windows CIの合成CTestで確認し、実driver障害とは区別。詳細 docs/verification/mvp-2026-10-02.md。"
+    },
+    {
+      "id": "recording-and-lifecycle",
+      "steps": [
+        "単一Color Sourceとミュート済み音声でローカル録画中の更新/応答性/負荷を確認する",
+        "dock 切替と通常終了・再起動を確認する",
+        "OBS ログで plugin のロード/解放、crash と残 worker の有無を確認する"
+      ],
+      "expected": "録画中にパネルが応答し、通常終了後に OBS プロセスが残らない",
+      "status": "pass",
+      "evidence": "同DLLで約251秒の1280x720/30fps/x264録画を正常停止。Statsのrender lag 0/15331、encode lag 0/7534。表示/非表示各30秒のOBS全体CPU 0.7742%/0.6179%（短時間参考値、配信試験ではない）。3 GUI sessionを通常終了しunloaded・OBS memory leaks 0・process消失。200%準備中にoperatorが中止した非対話processは正常終了証拠から除外。GUI lease解放。詳細 docs/verification/mvp-2026-10-02.md。"
+    }
+  ],
+  "candidate": {
+    "source_sha": "744a6281ac298b7042b09a10cdef74e768dd080e",
+    "windows_run": 37015281867,
+    "windows_job": 110864515733,
+    "harness_run": 37015282185,
+    "package_artifact": 11229044622,
+    "artifact_sha256": "952f7485aafa3941320d4b298069008d05ff7e0c77b83834b42a3f6b100fad99",
+    "plugin_zip_sha256": "9e7643cf6631d8d6d384e6924449f312a7206e419b0d5da3581350ca8748ddd7",
+    "source_zip_sha256": "1ca0dae9484ed0b60a2808faa0940a9bbda0995d9d526af5c8e485f5ac42d9ac",
+    "dll_sha256": "2a0c65542764933cf37fd9559db3222bb8b3c7a1bc95ce1e6a619a334b743a94",
+    "obs_version": "32.2.2",
+    "qt_version": "6.11.1",
+    "locales": [
+      "en-US",
+      "ja-JP"
+    ],
+    "evidence_report": "docs/verification/mvp-2026-10-02.md",
+    "identity_rule": "後続の文書HEAD/昇格HEADはPRで別に記録する。再生成した別DLLへGUI passを移さない。"
+  },
+  "coverage_not_exercised": {
+    "status": "pending",
+    "owner": "PM",
+    "issue": "https://github.com/shinma06/obs-process-monitor/issues/13",
+    "conditions": [
+      "mixed-DPIモニター間移動",
+      "長時間・複雑scene・配信",
+      "複数processor group実機",
+      "GPU driver再初期化"
+    ],
+    "next_action": "専用環境と長時間試験枠を確保し、#13で候補を固定して検証する。初期版必要Caseとは別範囲。"
+  },
+  "native_os_dpi": {
+    "date": "2026-10-03",
+    "status": "pass",
+    "observer": "PM",
+    "original": "main monitor2: 100%, 2560x1440 landscape; secondary monitor1: 100%, 1080x1920 portrait",
+    "tested": [
+      100,
+      150,
+      200
+    ],
+    "qt_scale_factor": 1,
+    "restored": "Windows設定でmonitor2の100%・元の解像度/向きを読戻し。monitor1は変更なし",
+    "observed": "150%起動、起動中200%変更、数値/単位/更新、scrollによる全項目到達、200% float/re-dock、100%復元後更新、通常終了",
+    "limits": "mixed-DPIモニター移動は未実施。Qt限定倍率の前日試験とは別の実観察",
+    "review_finding": "https://github.com/shinma06/obs-process-monitor/pull/12#discussion_r4166694852"
+  }
+}

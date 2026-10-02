@@ -1,8 +1,8 @@
 {
   "issue": 7,
   "integration": "develop",
-  "gui": "required",
-  "gui_reason": "System/OBS/GPU の native dock UI・worker lifecycle・localeを変更。OBS実ロード・theme/DPI/操作と録画配信中の負荷はQA #8でPMが確認する。",
+  "gui": "pass",
+  "gui_reason": "QA #8で744a628候補のテーマ・操作・言語・実OS100/150/200%・録画・終了を確認。mixed-DPI移動と長時間配信等は#13にpendingとして移管。",
   "references": [
     "https://github.com/shinma06/obs-process-monitor/issues/5",
     "https://github.com/shinma06/obs-process-monitor/issues/8",
@@ -26,10 +26,8 @@
         "synthetic metric presentationとsnapshot workerのCTestを実行する"
       ],
       "expected": "単位・分母・初回/非対応/失敗・欠損total・異常数値を正しく表示し、GUI外で計測、pause/resumeでbaselineをreset、in-flight終了をjoin、失敗後回復する",
-      "status": "pending",
-      "evidence": "2026-10-02 Windows/MinGWのQt-free worker合成試験は成功。develop 95d8cf9へ統合済みの#4/#6を取り込み、ui-presentation/ui-workerをCTestへ配線済み。固定HEADのWindows CIを次に実行する。",
-      "next_owner": "ui-agent",
-      "next_action": "固定HEADのWindows CIでQt presentationとworkerを含む全CTest結果を確認し、PR/Issueへ正確なrun/source情報を記録する"
+      "status": "pass",
+      "evidence": "固定HEAD 901585b7419ad5a91ba2d32c5c69afcf8f5e0b83: Windows run37014635327 job110862380182のui-presentation/ui-workerを含む全4 CTest成功。合成の初回・非対応・取得不可・stale・in-flight世代・pause/resume・join・失敗回復を確認。実機再現とは区別。"
     },
     {
       "id": "windows-build",
@@ -37,49 +35,41 @@
         "固定したWindows/OBS/Qt依存でnative DLLをbuildする"
       ],
       "expected": "C++/Qt/OBS の compile/link と package が成功する",
-      "status": "pending",
-      "evidence": "OBS 32.2.2 / Qt 6.11.1 / MSVC 19.51.36260.0のbuild基盤と計測層を統合済み。UIを含むDLLの結果は固定HEADのCI実行待ち。",
-      "next_owner": "ui-agent",
-      "next_action": "固定HEADのWindows build/packageとartifact identityを確認する。後続のCase整理はPM #12が行う"
+      "status": "pass",
+      "evidence": "固定HEAD 901585b7419ad5a91ba2d32c5c69afcf8f5e0b83: Windows run37014635327成功。OBS32.2.2 / Qt6.11.1 / MSVC19.51.36260.0、DLL SHA-256 452317326dcc4e1592571abfef846af27fa09652ed32b80cda46450ed5f29c3b。統合候補744a6281ac298b7042b09a10cdef74e768dd080eの別buildもrun37015281867で4 CTest/build/package成功。"
     },
     {
       "id": "native-theme-dpi-resize",
       "steps": [
         "QA #8で同一source SHA/DLL SHA-256のportable OBSを開く",
         "標準Stats dockと並置し対応テーマを切り替える",
-        "Windows 100/150/200% DPI、狭幅・拡大・短い高さ・float/re-dockを試す",
+        "Windows実OS100/150/200% DPI、狭幅・拡大・短いviewport・float/re-dockを試す。Qt限定スケールの補助試験は別に記録する",
         "TabキーでGPU選択に到達し、複数adapterなら選択を変える"
       ],
       "expected": "OBS font/palette/spacingに追従し、数値と単位と状態が欠けず、縦scrollと折り返しで読める。テーマ変更後も固定色やfontを持たない",
-      "status": "pending",
-      "evidence": "PM専有のGUI leaseで未実施。引継ぎ先 https://github.com/shinma06/obs-process-monitor/issues/8",
-      "next_owner": "PM",
-      "next_action": "#8で固定candidate DLLをロードして実観測とtheme/DPI条件を記録する"
+      "status": "pass",
+      "evidence": "固定source744a6281ac298b7042b09a10cdef74e768dd080e、同package DLL/locale。10月2日にYami Default/Light、Stats並置、日本語/英語、狭幅/拡大、float/re-dock、タブ、scroll、Tab+矢印GPU選択、実OS100%とQt限定150/200%を観察。PR #12のP1後、10月3日にはWindows設定で主モニターを実OS150→200%に変更し、QT_SCALE_FACTOR=1で値/単位/更新、短いviewportのscroll、200%のfloat/re-dockを観察。元の100%へ復元・設定を読戻し、通常終了を確認。必要な実OS DPI CaseをQt試験で代替していない。詳細 docs/verification/mvp-2026-10-02.md。mixed-DPIモニター移動は未実施で#13。"
     },
     {
       "id": "live-states-and-lifecycle",
       "steps": [
-        "QA #8で初回計測・低負荷・高負荷・GPU/VRAM非対応または取得失敗を確認する",
+        "QA #8で初回・通常実負荷・真のzeroを観察し、非対応/取得失敗/回復は合成CTestと区別して照合する",
         "dockの非表示/再表示を繰り返す",
         "OBSを終了して再起動する"
       ],
       "expected": "初回/非対応/取得不可を文字で区別し、欠損を0%にしない。CPUは再表示時の差分基準から再計測し、workerが安全に終了してhang/crashしない",
-      "status": "pending",
-      "evidence": "実機未実施。取得失敗fixtureは合成試験として別に扱う。引継ぎ先 #8",
-      "next_owner": "PM",
-      "next_action": "#8で実取得可能な状態を観測し未再現条件は明記する"
+      "status": "pass",
+      "evidence": "同候補で計測中→現在値、非表示後の再計測、2 GPU切替・真のzeroを観察。3 GUI sessionの通常終了と再起動、unloaded・OBS memory leaks 0・process消失を確認。高CPU実負荷は#6 native CLI、unavailable/unsupported/stale/例外は同候補CTestで検証。実driver障害は未再現。詳細 docs/verification/mvp-2026-10-02.md。"
     },
     {
       "id": "recording-streaming-overhead",
       "steps": [
-        "QA #8で同条件の録画/配信をdock非表示/表示で比較する",
+        "初期版はQA #8で同条件のローカル録画をdock非表示/表示で比較し、長時間/複雑scene/配信は#13で追加検証する",
         "OBS応答性とrender lag・CPU追加負荷を観測する"
       ],
-      "expected": "1Hzのバックグラウンド計測でUIを阻害せず、追加負荷が小さく録画/配信の安定性を保つ",
-      "status": "pending",
-      "evidence": "実機未実施。採取時間/負荷値は計測後に記録する。引継ぎ先 #8",
-      "next_owner": "PM",
-      "next_action": "#8で固定DLLを用いたbefore/after条件・時間・実測値を記録する"
+      "expected": "1Hzのバックグラウンド計測が、確認したローカル録画条件でUI応答や録画を阻害しない。一般性能や配信の保証と区別する",
+      "status": "pass",
+      "evidence": "約251秒のColor Source録画、render/encode lag 0。各30秒の表示/非表示でOBS全体CPU 0.7742%/0.6179%、差+0.1563 percentage points。1台・単純scene・単回測定の参考値でplugin単独負荷や配信の証拠ではない。UI更新/操作/再開を観察。詳細 docs/verification/mvp-2026-10-02.md、拡張は#13。"
     },
     {
       "id": "independent-review",
@@ -87,10 +77,8 @@
         "writerとは別sessionに固定HEAD/baseとIssue受入を渡す"
       ],
       "expected": "未解決の具体的コード欠陥0、必要CLI試験の成功、残GUI CaseのQA引継ぎを確認する",
-      "status": "pending",
-      "evidence": "未実施",
-      "next_owner": "PM / independent reviewer",
-      "next_action": "依存統合・build・試験後の固定revisionを独立reviewする"
+      "status": "pass",
+      "evidence": "build-agent（writer ui-agentと別session）がHEAD901585b7419ad5a91ba2d32c5c69afcf8f5e0b83 / base95d8cf9d9bde3a91be00ca25cda790ed2bca3820をレビュー。14変更ファイル/呼出関係、worker寿命/世代/stale/例外、native UI/locale/accessibility、module/CMakeを確認、具体的な指摘なし。独立worker実行とCI読戻し成功。PR #10 review5392541131。"
     }
   ]
 }
