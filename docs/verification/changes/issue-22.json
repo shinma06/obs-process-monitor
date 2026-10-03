@@ -1,0 +1,68 @@
+{
+  "issue": 22,
+  "integration": "develop",
+  "gui": "required",
+  "gui_reason": "GPU instanceの受入条件を修正するため、#21と統合した最終同一DLLでQA #8を再実施する。旧候補のGUI passは流用しない。",
+  "references": [
+    "https://github.com/shinma06/obs-process-monitor/issues/5",
+    "https://github.com/shinma06/obs-process-monitor/issues/8",
+    "https://github.com/shinma06/obs-process-monitor/issues/21",
+    "https://github.com/shinma06/obs-process-monitor/pull/14#discussion_r4171456230"
+  ],
+  "cases": [
+    {
+      "id": "empty-engine-type-regression",
+      "steps": [
+        "空type、通常type、空typeの#1 aliasをparseし、数値identityと集計結果を確認する",
+        "PID/LUID/physical/engineの上限値、不正値、桁数、overflow、必須_engtype_区切り欠損の試験を実行する"
+      ],
+      "expected": "空typeだけを理由に有効なGPU行を拒否せず、同一process/engineのaliasは一度だけ集計する。実測ゼロは有効値で、不正な識別子は引き続き拒否する",
+      "status": "pass",
+      "evidence": "2026-10-03 Windows/MinGW C++17、-O2 -Wall -Wextra -Werror -pedantic。追加回帰は修正前に62check目のempty and named engine types must parseで失敗し、name.empty()拒否だけを除去後は全84 checks成功。ResourceSamplerのunknownEngineと数値group keyは変更なし。"
+    },
+    {
+      "id": "native-sampler-and-harness",
+      "steps": [
+        "既存Windows sampler CLIで実APIの初回・通常値・reset・終了を確認する",
+        "python scripts/check.pyとgit diff --checkを実行する"
+      ],
+      "expected": "実APIの通常経路とharnessが成功し、試験だけで空typeを返す実driverを再現したとは扱わない",
+      "status": "pass",
+      "evidence": "2026-10-03 Windows/MinGW、sampler --require-gpu --samples 15成功。2 adapterのGPU/専用メモリ、CPU/RAM、初回/reset、実CPU負荷、6回生成破棄のhandle数139→139を確認。空typeを返す実driverを再現したという意味ではない。python scripts/check.pyは11 tests実行（10成功、POSIX専用1 skip）、git diff --check成功。"
+    },
+    {
+      "id": "windows-build-and-tests",
+      "steps": [
+        "固定HEADでWindows DLL build・全4 CTest・packageとWindows/Linux harnessを実行する"
+      ],
+      "expected": "固定依存によるMSVC build、全4 CTest、package、harnessが成功する",
+      "status": "pending",
+      "evidence": "このcommit作成時点でCI待ち。固定HEADの結果とrun/jobはPR/Issueへ追記し、最終QA文書で照合する。",
+      "next_owner": "metrics-agent / PM",
+      "next_action": "Draft PRの固定HEADとCI run/jobを読み戻して記録する"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "writerとは別sessionに固定HEAD/base、parser/caller/集計と試験の差分を渡す"
+      ],
+      "expected": "未解決の具体的指摘0、CLI/CI成功、残GUI CaseのQA引継ぎを確認する",
+      "status": "pending",
+      "evidence": "このcommit作成時点で未実施。固定HEAD/baseの独立レビュー結果はPR/Issueへ記録する。",
+      "next_owner": "PM / qa_final_review",
+      "next_action": "固定HEADで独立レビューし、PRへ結果を記録する"
+    },
+    {
+      "id": "final-integrated-gui",
+      "steps": [
+        "#21/#22統合後のsource、CI、package/DLL/locale hashを固定してQA #8の専用OBSへ配置する",
+        "GPU選択、数値/単位、初回/取得不可/真のゼロ、非表示再開、録画応答性、通常終了を観察する"
+      ],
+      "expected": "最終同一DLLの対象と状態を正しく表示し、安全に再開・終了する。空typeの実driver未再現は合成回帰の証拠と分ける",
+      "status": "pending",
+      "evidence": "GUI禁止の実装sessionでは未実施。QA https://github.com/shinma06/obs-process-monitor/issues/8#issuecomment-5964955873 へ初期条件・操作・期待・owner・再開条件を引継ぎ、#8→#22の参照を読戻した。",
+      "next_owner": "PM",
+      "next_action": "#21/#22統合、独立レビューと必要CI成功後、GUI leaseと最終候補を固定して#8で再QAする"
+    }
+  ]
+}

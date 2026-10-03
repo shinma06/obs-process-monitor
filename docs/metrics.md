@@ -23,7 +23,7 @@ DXGI hardware adapter の LUID と GPU performance counter instance の LUID を
 
 専用メモリ使用量は `GPU Adapter Memory(*) / Dedicated Usage` です。process 別 GPU memory は共有 allocation を二重計上するため使いません。分母は DXGI の `DedicatedVideoMemory` で、OBS process の動的 budget ではありません。`IDXGIAdapter3::QueryVideoMemoryInfo` の CurrentUsage/Budget は process 対象なので、システム GPU 全体の使用量・容量として代用しません。shared GPU memory、温度、電力は本 API の対象外です。専用容量ゼロの adapter は専用メモリを非対応として返します。
 
-GPU performance counter の可用性は Windows/WDDM/driver に依存します。instance の構造を認識できない場合も取得不可にします。LUID 相関と busiest-engine 集計は本実装の処理であり、Microsoft がこのプラグインの測定値一致を保証しているという意味ではありません。
+GPU performance counter の可用性は Windows/WDDM/driver に依存します。engine instance は `_engtype_` 区切りと PID/LUID/physical/engine の数値を検証します。種別名は集計の識別に使わないため空でも受け入れます。instance の構造を認識できない場合は取得不可にします。LUID 相関と busiest-engine 集計は本実装の処理であり、Microsoft がこのプラグインの測定値一致を保証しているという意味ではありません。
 
 参照: Microsoft GPU scheduler 担当者の [GPUs in the Task Manager](https://devblogs.microsoft.com/directx/gpus-in-the-task-manager/)、[DXGI_ADAPTER_DESC](https://learn.microsoft.com/en-us/windows/win32/api/dxgi/ns-dxgi-dxgi_adapter_desc)、[QueryVideoMemoryInfo](https://learn.microsoft.com/en-us/windows/win32/api/dxgi1_4/nf-dxgi1_4-idxgiadapter3-queryvideomemoryinfo)。
 
