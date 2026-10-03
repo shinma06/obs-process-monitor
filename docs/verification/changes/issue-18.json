@@ -1,0 +1,65 @@
+{
+  "issue": 18,
+  "integration": "develop",
+  "gui": "pending",
+  "gui_reason": "QA #8 / PM owner。package変更後の新source SHA / DLL SHA256 / CI runを固定しOBSの必要Caseを再確認する。旧b02のGUI passを転用しない。develop統合後にPMが新artifactを照合・配置。main #14は再受入まで保留。",
+  "cases": [
+    {
+      "id": "package-inputs",
+      "steps": [
+        "powershell -File scripts/test-package-inputs.ps1",
+        "base f19c785132660e735a25e58953ccfd0a2cd0179e のpackage scriptを -PackageScript / -ExpectLegacyLeaks で同じfixtureに渡す"
+      ],
+      "expected": "未追跡のroot/nested header、data、CMake入力、ignore済み入力とtracked staged/unstaged差分を拒否する。既知生成物と限定Python cacheは許可し、実package entryはfresh configure後clean buildへ到達する。filenameを拒否ログに出さない。",
+      "status": "pass",
+      "evidence": "2026-10-03 package-fix-agent / PowerShell 7.6.5 / local Windows。独立temp Gitで15ケース成功。旧baseでは11未追跡ケースがbuild境界へ到達し、tracked変更2ケースのみ拒否する漏れを再現。新scriptは全未追跡ケースをconfigure/build前に拒否。正常2・未追跡11・追跡差分2件。"
+    },
+    {
+      "id": "removed-cmake-input-cache",
+      "steps": [
+        "cmake -P scripts/test-package-cache.cmake"
+      ],
+      "expected": "実CMakeでmodule削除後もcache値が通常configureに残り、--freshで消えることを確認する。",
+      "status": "pending",
+      "evidence": "Owner: package-fix-agent / Windows CI。local hostにCMakeなし。CIの固定CMake 4.4.3で実行する。"
+    },
+    {
+      "id": "windows-build-package",
+      "steps": [
+        "fresh Windows CIの依存hash / 28 prefix回帰 / package入力回帰",
+        "configure / 実package config 5件 / DLL build / 4 CTest / package"
+      ],
+      "expected": "固定OBS 32.2.2 / Qt 6.11.1で成功し、fresh configureとclean build後のDLL/manifest/source identityが一致する。",
+      "status": "pending",
+      "evidence": "Owner: package-fix-agent、push後のWindows CIを読戻す。"
+    },
+    {
+      "id": "harness",
+      "steps": [
+        "python scripts/check.py"
+      ],
+      "expected": "harnessの既存検証が成功する。",
+      "status": "pass",
+      "evidence": "2026-10-03 package-fix-agent / Windows local。python scripts/check.py: 11 tests、POSIX専用1 skip、成功。commit/push hookでも再検査する。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "固定HEAD/baseをwriterと別セッションのPMへ渡す"
+      ],
+      "expected": "入力例外、cache/build順序、回帰をレビューし、未解決欠陥がない。",
+      "status": "pending",
+      "evidence": "Owner: PM。writer停止・固定HEAD後に独立レビューする。"
+    },
+    {
+      "id": "new-candidate-gui",
+      "steps": [
+        "QA #8で新source SHA / DLL SHA256 / CI runと実ロードmoduleを照合",
+        "PMが予約済みportable OBSで必要GUI Caseと通常終了を再観察"
+      ],
+      "expected": "新DLLが必要Caseを満たしてからmain #14を昇格する。",
+      "status": "pending",
+      "evidence": "Owner: PM / QA #8。入力はclean fresh CI package。初期条件はdocs/verification/mvp-2026-10-03.mdのOBS/Qt/Windows環境、操作と期待はQA #8既存Case。旧候補passは履歴として保持し再利用しない。develop統合後に新artifact取得から再開する。"
+    }
+  ]
+}

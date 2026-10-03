@@ -8,11 +8,30 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Cannot read source revision.' }
     git diff --quiet HEAD
     if ($LASTEXITCODE -ne 0) { throw 'Commit tracked changes before packaging an identified build.' }
+    # Do not use --exclude-standard: ignored headers/resources can still be
+    # compiler or install inputs. Only known non-source output locations are safe.
+    $untracked = @(git ls-files --others -- . `
+        ':(top,exclude)build_x64/**' ':(top,exclude).deps/**' `
+        ':(top,exclude)out/**' ':(top,exclude).harness-local/**' `
+        ':(top,exclude).vs/**' ':(top,exclude)cmake/.CMakeBuildNumber' `
+        ':(top,exclude,glob)scripts/__pycache__/*.pyc' `
+        ':(top,exclude,glob)tests/__pycache__/*.pyc')
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect untracked package inputs.' }
+    if ($untracked.Count -ne 0) {
+        # Paths can contain private names; keep them out of CI/public diagnostics.
+        throw 'Commit or remove untracked files outside documented build output locations before packaging.'
+    }
     $buildInfo = Get-Content -LiteralPath 'build_x64/build-info.json' -Raw | ConvertFrom-Json
     if ($buildInfo.source_sha -ne $sourceSha) { throw 'Reconfigure after changing HEAD before packaging.' }
-    # A fresh configure alone can leave an older DLL behind. Always build the
-    # selected configuration before installing it under the current identity.
-    cmake --build --preset windows-x64 --parallel
+    # Discard cache settings left by an untracked CMake module from an earlier
+    # configure, even if that input was removed before this packaging attempt.
+    cmake --preset windows-x64 --fresh
+    if ($LASTEXITCODE -ne 0) { throw 'Fresh CMake configure failed; no package was created.' }
+    $buildInfo = Get-Content -LiteralPath 'build_x64/build-info.json' -Raw | ConvertFrom-Json
+    if ($buildInfo.source_sha -ne $sourceSha) { throw 'Fresh configure source revision does not match HEAD.' }
+    # A prior build may have compiled a now-removed untracked header. Recompile
+    # from the verified source tree rather than trusting incremental objects.
+    cmake --build --preset windows-x64 --parallel --clean-first
     if ($LASTEXITCODE -ne 0) { throw 'CMake build failed; no package was created.' }
     $spec = Get-Content -LiteralPath 'buildspec.json' -Raw | ConvertFrom-Json
     $artifactDir = Join-Path $ProjectRoot ('out/package-' + [guid]::NewGuid().ToString('N'))
