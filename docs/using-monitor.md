@@ -6,7 +6,7 @@
 
 [Windows plugin build](https://github.com/shinma06/obs-process-monitor/actions/workflows/windows-build.yml) の成功した run から、受入記録の source SHA と一致する artifact を取得します。`obs-process-monitor-<SHA>-windows-x64.zip` が本体、`-source.zip` が対応ソースです。`SHA256SUMS.txt` と `build-manifest.json` で ZIP と DLL の SHA-256 を別々に照合できます。公開 Release と installer はまだ提供していません。
 
-初期版の実機確認用候補は [run 37088286869](https://github.com/shinma06/obs-process-monitor/actions/runs/37088286869) の artifact `11261243674`、source `99f865252c2072441f91ddcb2309f9627015b850` です。DLL SHA-256 は `ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5`。後続の文書更新・昇格CIで作られた別DLLは、この候補の実機受入結果を引き継ぎません。受入状態は冒頭の記録を確認してください。
+初期版の実機確認用候補は [run 37093185917](https://github.com/shinma06/obs-process-monitor/actions/runs/37093185917) の artifact `11262922424`、source `689a46291bc80e2f5a1a995b75227ba0acb89495` です。DLL SHA-256 は `8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812`。後続の文書更新・昇格CIで作られた別DLLは、この候補の実機受入結果を引き継ぎません。受入状態は冒頭の記録を確認してください。
 
 ## OBS に配置する
 
