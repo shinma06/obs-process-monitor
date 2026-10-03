@@ -2,7 +2,7 @@
   "issue": 4,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "基盤の予備確認は以下の履歴を保持。最終計測/UIと依存修正を含む新b02候補の実ロード・GUI・終了はQA #8で別途再観察済み。2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。",
+  "gui_reason": "基盤と旧候補の履歴を保持。最終package修正後の新99f候補の実ロード・GUI・終了はQA #8で再観察済み。2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。",
   "cases": [
     {
       "id": "windows-fresh-build",
@@ -55,9 +55,9 @@
     }
   ],
   "final_candidate_acceptance": {
-    "source_sha": "b02a41ebe4aee1d5031a10e60adf3967c4127ab0",
-    "dll_sha256": "860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63",
-    "evidence_report": "docs/verification/mvp-2026-10-03.md",
+    "source_sha": "99f865252c2072441f91ddcb2309f9627015b850",
+    "dll_sha256": "ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5",
+    "evidence_report": "docs/verification/mvp-2026-10-03-package.md",
     "issue": 8
   }
 }

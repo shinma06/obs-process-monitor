@@ -1,8 +1,8 @@
 {
   "issue": 18,
   "integration": "develop",
-  "gui": "pending",
-  "gui_reason": "QA #8 / PM owner。package変更後の新source SHA / DLL SHA256 / CI runを固定しOBSの必要Caseを再確認する。旧b02のGUI passを転用しない。develop統合後にPMが新artifactを照合・配置。main #14は再受入まで保留。",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。package修正後の新DLLで全必要GUI Caseを実施。main昇格そのものはPR #14で別gate。",
   "cases": [
     {
       "id": "package-inputs",
@@ -20,8 +20,8 @@
         "cmake -P scripts/test-package-cache.cmake"
       ],
       "expected": "実CMakeでmodule削除後のcache値が通常configureに残り、生成headerが--fresh/clean後も残ること、新build treeがどちらも引き継がないことを確認する。",
-      "status": "pending",
-      "evidence": "Owner: package-fix-agent / 最新Windows CI。local hostにCMakeなし。旧a533のcache-only試験passを拡張版へ転用しない。"
+      "status": "pass",
+      "evidence": "2026-10-03 Windows37088286869/job111102967005、CMake4.4.3実fixture成功。削除module cache残留、--fresh/clean後の任意header残留、新tree非継承を確認。"
     },
     {
       "id": "windows-build-package",
@@ -30,8 +30,8 @@
         "configure / 実package config 5件 / DLL build / 4 CTest / package"
       ],
       "expected": "固定OBS32.2.2 / Qt6.11.1で成功し、専用新treeのconfigure/build/4 CTest/install後のDLL/manifest/source identityが一致する。最終package内CTestのLastTest.logを証拠とし、先行build_x64試験だけを転用しない。",
-      "status": "pending",
-      "evidence": "Owner: package-fix-agent、push後のWindows CIを読戻す。"
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。内外manifest、ZIP/hash、source ZIP commit、localeを照合。3回の実ロードmodule hashとログsourceが一致。System/OBS CPU/RAM・GPU/VRAM・更新時刻の継続更新を観察。Windows37088286869/job111102967005、Harness37088286870全成功。最終package専用buildの4 CTest成功をログで確認。PS5.1/7各20ケース、28依存prefix回帰、hash、解決済みpackage config5件、通常build4 CTestおよび新規package build4 CTest、install/package成功。"
     },
     {
       "id": "harness",
@@ -40,7 +40,7 @@
       ],
       "expected": "harnessの既存検証が成功する。",
       "status": "pass",
-      "evidence": "2026-10-03 package-fix-agent / Windows local。python scripts/check.py: 11 tests、POSIX専用1 skip、成功。commit/push hookでも再検査する。"
+      "evidence": "Windows local11 tests/POSIX専用1skip、Harness37088286870のWindows/Linux・metric-math全成功。"
     },
     {
       "id": "independent-review",
@@ -48,8 +48,8 @@
         "固定HEAD/baseをwriterと別セッションのPMへ渡す"
       ],
       "expected": "入力例外、cache/build順序、回帰をレビューし、未解決欠陥がない。",
-      "status": "pending",
-      "evidence": "Owner: PM。a533 review5398401279後の追加P1/P2（生成header残留、再build後の未試験）を修正中。新固定HEADで独立レビューと最新CIを確認する。"
+      "status": "pass",
+      "evidence": "writer package-fix-agentとは別sessionのPM /root。HEAD99f865252c2072441f91ddcb2309f9627015b850/basef19c785132660e735a25e58953ccfd0a2cd0179e、PR19 review5398488736、未解決0。最新auto activity5964249216も99fで完了し追加指摘0。squash8b7とのtree一致はPMとqa_final_reviewが独立照合。"
     },
     {
       "id": "new-candidate-gui",
@@ -58,8 +58,14 @@
         "PMが予約済みportable OBSで必要GUI Caseと通常終了を再観察"
       ],
       "expected": "新DLLが必要Caseを満たしてからmain #14を昇格する。",
-      "status": "pending",
-      "evidence": "Owner: PM / QA #8。入力はclean fresh CI package。初期条件はdocs/verification/mvp-2026-10-03.mdのOBS/Qt/Windows環境、操作と期待はQA #8既存Case。旧候補passは履歴として保持し再利用しない。develop統合後に新artifact取得から再開する。"
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。内外manifest、ZIP/hash、source ZIP commit、localeを照合。3回の実ロードmodule hashとログsourceが一致。System/OBS CPU/RAM・GPU/VRAM・更新時刻の継続更新を観察。Windows37088286869/job111102967005、Harness37088286870全成功。最終package専用buildの4 CTest成功をログで確認。2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。標準Stats並置、Yami Default dark/Light、ja-JP/en-US、約157px狭幅から約350pxへの拡大、単位折返しと縦scroll、float/re-dock、タブ、矢印/EnterのGPU選択を観察。狭幅では横scrollbarも表示。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light、200%日本語darkで起動、値/単位/更新、GPUまでのscroll、200%float/re-dockと再表示、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。NVIDIA/AMDの切替、専用メモリ総量の違い、AMD実測0.0%・6.7/485.8MiBを観察。非表示/再表示で現在値へ復帰、float直後は計測中・GPU確認中となり旧fill消去を確認。unavailable/unsupported/stale/異常値/例外回復は同候補の合成CTestで確認し、実driver障害とは区別する。2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。Color Source、音声mute、720p30/NVENC H.264 CBR6000/AAC160で222.354秒のローカル録画を正常停止。Stats render lag0/8311、encode lag0/6669。各30秒のOBS全体CPUは表示0.6118%・非表示0.9111%、差-0.2994 percentage points。通常の他アプリが動作する単一ホスト・単純scene・単回の参考値で、plugin単独負荷や効果の推定には使わない。3セッションとも通常終了、unloaded、memory leaks0、process消失。Windows設定終了・GUI lease解放済み。"
     }
-  ]
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "99f865252c2072441f91ddcb2309f9627015b850",
+    "dll_sha256": "ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5",
+    "evidence_report": "docs/verification/mvp-2026-10-03-package.md",
+    "issue": 8
+  }
 }
