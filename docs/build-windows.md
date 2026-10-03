@@ -20,9 +20,11 @@ ctest --test-dir build_x64 -C RelWithDebInfo --output-on-failure --no-tests=erro
 powershell -File scripts/package-windows.ps1
 ```
 
-configure は `.deps/` に固定の依存 archive を取得し、OBS の libobs / frontend API を Debug と Release で構築します。plugin DLL は `build_x64/RelWithDebInfo/obs-process-monitor.dll`、配布物は `out/package-*/` に生成します。configure には実際の HEAD を記録するため Git checkout が必要です。HEAD を変更したときは configure から再実行してください。
+configure は `.deps/` に固定の依存 archive を取得し、OBS の libobs / frontend API を Debug と Release で構築します。plugin DLL は `build_x64/RelWithDebInfo/obs-process-monitor.dll`、配布物は `out/package-*/` に生成します。configure には実際の HEAD を記録するため Git checkout が必要です。開発用buildでHEADを変更したときはconfigureから再実行してください。package自体は既存buildを使わず、現在のHEADを専用treeでconfigureします。
 
-package スクリプトは追跡ファイルの未 commit 差分と configure 時の HEAD 不一致を拒否し、install 前に必ず指定構成を再 build します。configure だけを行った後に旧 DLL を新 HEAD として梱包することを防ぎます。毎回別の出力 directory を使い、以前の配布物を上書きしません。ZIP には `obs-process-monitor/bin/64bit/obs-process-monitor.dll`、PDB、存在する locale data、および `build-manifest.json` が入ります。対応ソース ZIP と配布 ZIP の `SHA256SUMS.txt` も生成します。OBS 本体や Qt の DLL は同梱しません。
+package スクリプトは追跡ファイルの未commit差分を拒否します。未追跡ファイルもrepository / global / localのignore設定にかかわらず検査します。許可する生成先はroot直下の `build_x64/`、`.deps/`、`out/`、`.harness-local/`、`.vs/`、`cmake/.CMakeBuildNumber` と、`scripts/__pycache__/`・`tests/__pycache__/` 直下の `.pyc` のみです。source / data内の生成物や隠しファイル、`CMakeUserPresets.json`、`.env`・ローカルagent設定等も例外外なら拒否します。秘密ファイルは出力・自動削除しません。製品入力はcommitし、個人設定を持つcheckoutとは別のclean worktreeでpackageしてください。
+
+入力検査後、毎回新規の `out/package-<GUID>/build/` を作り、固定configure presetを `-B` でその空treeへ向けます。以前のconfigure入力が生成した任意のヘッダーは `--fresh` / cleanでも残り得るため、既存の `build_x64/` や過去packageのcache・object・生成ファイルを再利用しません。新しいbuild-infoのsource SHAとHEADを照合し、同じtree / RelWithDebInfoでbuild、CTest（`--no-tests=error`）、installを順に実行します。各失敗で停止し、未検証DLLを配布ZIPへ進めません。依存先 `.deps/` の任意の手動改変や、実行中の別writerによる変更まで保証するものではありません。毎回別の出力 directory を使い、以前の配布物を上書きしません。ZIP には `obs-process-monitor/bin/64bit/obs-process-monitor.dll`、PDB、存在する locale data、および `build-manifest.json` が入ります。対応ソース ZIP と配布 ZIP の `SHA256SUMS.txt` も生成します。OBS 本体や Qt の DLL は同梱しません。
 
 `build-manifest.json` の `source_sha`、`dll_sha256`、toolchain、依存 hash、CI run ID を QA 記録へ転記します。ZIP のハッシュと中の DLL ハッシュは別です。OBS ログにもロードした plugin の source SHA が出ます。
 
@@ -41,8 +43,10 @@ obs-deps と Qt の hash は [OBS 32.2.2 の公式 preset](https://github.com/ob
 
 archive hash の負の試験は `cmake -P scripts/test-dependency-hash.cmake`、prefix と marker / CMake cache の回帰試験は `cmake -P scripts/test-dependency-prefix.cmake` です。後者はローカル ZIP fixture を使う offline 試験で、Ninja / Make または Visual Studio の generator が必要ですが compiler と OBS は不要です。runner image 自体はホスト側で更新されるため、toolset が利用不能なら明示的に失敗します。新しい版への切り替えは依存変更としてレビュー・Windows build・実機受入を行います。
 
+package入力の回帰試験は `powershell -File scripts/test-package-inputs.ps1` です。使い捨てGit repositoryで実package entry pointをinstall境界まで動かし、未追跡header・data・ignore設定・追跡差分の拒否と通常生成物の許可、新tree / 同一構成のconfigure・build・CTest・installの順序と各失敗時の停止を検査します。`cmake -P scripts/test-package-cache.cmake` は実CMake module/cacheを使い、削除済み入力のcache値が通常configureでは残り、任意の生成ヘッダーは `--fresh` / cleanでも残ること、新treeではどちらも引き継がないことを確認します。
+
 ## CI と受入
 
-[Windows plugin build](../.github/workflows/windows-build.yml) は PR の実 HEAD を checkout し、fresh な runner で configure / DLL build / CTest / package / hash 不一致・prefix 再利用試験を行います。artifact は DLL ZIP、対応 source ZIP、manifest、配布物 hash、build/test logs を保持します。実パッチ版・runner image・source SHA を記録した再現手順であり、別日時・別 build path でも全バイトが一致する保証ではありません。
+[Windows plugin build](../.github/workflows/windows-build.yml) は PR の実 HEAD を checkout し、fresh な runner で configure / DLL build / CTest / package / 入力・cache回帰 / hash 不一致・prefix 再利用試験を行います。artifact は DLL ZIP、対応 source ZIP、manifest、配布物 hash、build/test logs を保持します。最終配布DLLの試験はpackage内で再build後に実行する4 CTestを正本とし、その `out/package-*/build/Testing/Temporary/LastTest.log` をlogs artifactへ保存します。先行 `build_x64` の試験だけで最終DLLをpassにしません。専用build treeは配布artifactの直下ZIP/JSON/hash用globとplugin ZIPのstageに含まれません。実パッチ版・runner image・source SHA を記録した再現手順であり、別日時・別 build path でも全バイトが一致する保証ではありません。
 
 プラグインを実機に配置する前に [GUI 操作予約](operations.md) に従います。ビルド CI はロード・テーマ・DPI・録画時負荷・終了の pass を意味しません。

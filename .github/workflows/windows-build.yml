@@ -28,6 +28,13 @@ jobs:
           if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'CMake download SHA256 mismatch.' }
           Expand-Archive -LiteralPath $archive -DestinationPath $env:RUNNER_TEMP
           (Join-Path $env:RUNNER_TEMP 'cmake-4.4.3-windows-x86_64/bin') | Add-Content $env:GITHUB_PATH
+      - name: Verify package inputs and isolated build
+        run: |
+          scripts/test-package-inputs.ps1
+          powershell -NoProfile -File scripts/test-package-inputs.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake -P scripts/test-package-cache.cmake
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify dependency hash rejection
         run: cmake -P scripts/test-dependency-hash.cmake
       - name: Verify pinned dependency selection and cache reuse
@@ -86,4 +93,6 @@ jobs:
           path: |
             out/*.log
             build_x64/CMakeFiles/CMakeConfigureLog.yaml
+            out/package-*/build/Testing/Temporary/LastTest.log
+            out/package-*/build/CMakeFiles/CMakeConfigureLog.yaml
           if-no-files-found: ignore
