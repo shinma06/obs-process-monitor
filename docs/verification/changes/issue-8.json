@@ -2,7 +2,7 @@
   "issue": 8,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "依存修正後の新b02a41e DLLで必要Caseを再観察。旧744 DLLのpassは転用していない。実OS100/150/200%を確認し100%へ復元。追加条件は#13でpending。",
+  "gui_reason": "package修正後の新99f DLLで必要Caseを再観察。旧b02 passは転用せず、実OS100/150/200%を確認し100%へ復元。追加範囲は#13でpending。",
   "cases": [
     {
       "id": "artifact-load-and-update",
@@ -13,7 +13,7 @@
       ],
       "expected": "識別した DLL がロードされ、CPU/RAM/GPU の現在値と更新状態を読み取れる",
       "status": "pass",
-      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。manifest/ZIP/locale/source ZIPを照合し、3回の実ロードmodule hashとログsourceが一致。System/OBS CPU/RAM・GPU/VRAM・更新時刻の約1Hz更新を観察。Windows run37077824712 / job111071546097で28依存回帰、解決した5 package configの検査、DLL/4 CTest/package成功。"
+      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。内外manifest、ZIP/hash、source ZIP commit、localeを照合。3回の実ロードmodule hashとログsourceが一致。System/OBS CPU/RAM・GPU/VRAM・更新時刻の継続更新を観察。Windows37088286869/job111102967005、Harness37088286870全成功。最終package専用buildの4 CTest成功をログで確認。"
     },
     {
       "id": "native-theme-and-layout",
@@ -25,7 +25,7 @@
       ],
       "expected": "読めない文字、欠けた数値、固定色、到達不能な操作がなく、テーマと表示スケールへ追従する",
       "status": "pass",
-      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。標準Stats並置、Yami Original(Default dark)/Light、ja-JP/en-US、約155pxの狭幅から拡大、短いviewportのscroll、float/re-dock、タブ、Tab/矢印GPU選択を観察。狭幅では単位の折返しと縦横scrollで項目に到達。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語/Light、200%日本語/darkで再起動し、値/単位/更新/scroll、200% float/re-dock、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。"
+      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。標準Stats並置、Yami Default dark/Light、ja-JP/en-US、約157px狭幅から約350pxへの拡大、単位折返しと縦scroll、float/re-dock、タブ、矢印/EnterのGPU選択を観察。狭幅では横scrollbarも表示。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light、200%日本語darkで起動、値/単位/更新、GPUまでのscroll、200%float/re-dockと再表示、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。"
     },
     {
       "id": "sampling-states-and-adapters",
@@ -36,7 +36,7 @@
       ],
       "expected": "表示対象を区別でき、取得できない値を 0 と誤表示せず、安全に再開する",
       "status": "pass",
-      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。NVIDIA/AMDの切替と異なる専用メモリ容量、AMDの実測0.0%を観察。非表示/再表示・float後に計測中と旧fill消去、新しい現在値への復帰を確認。unavailable/unsupported/stale/異常数値/例外回復は同候補の合成CTestで確認し、実driver障害とは区別する。"
+      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。NVIDIA/AMDの切替、専用メモリ総量の違い、AMD実測0.0%・6.7/485.8MiBを観察。非表示/再表示で現在値へ復帰、float直後は計測中・GPU確認中となり旧fill消去を確認。unavailable/unsupported/stale/異常値/例外回復は同候補の合成CTestで確認し、実driver障害とは区別する。"
     },
     {
       "id": "recording-and-lifecycle",
@@ -47,27 +47,28 @@
       ],
       "expected": "録画中にパネルが応答し、通常終了後に OBS プロセスが残らない",
       "status": "pass",
-      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。Color Source、音声ミュート、1280x720/30fps/NVENC H.264、CBR6000kbps/AAC160kbpsを約331秒録画し正常停止。Statsでrender lag 0/13622、encode lag 0/9933。表示/非表示各30秒のOBS全体CPU 0.5663%/0.4230%、差+0.1433 percentage points。単純scene・単回・1台の参考値でplugin単独負荷や配信性能を表さない。3 GUI sessionとも通常終了、unloaded・OBS memory leaks 0・process消失。Windows設定終了とGUI lease解放を確認。"
+      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。Color Source、音声mute、720p30/NVENC H.264 CBR6000/AAC160で222.354秒のローカル録画を正常停止。Stats render lag0/8311、encode lag0/6669。各30秒のOBS全体CPUは表示0.6118%・非表示0.9111%、差-0.2994 percentage points。通常の他アプリが動作する単一ホスト・単純scene・単回の参考値で、plugin単独負荷や効果の推定には使わない。3セッションとも通常終了、unloaded、memory leaks0、process消失。Windows設定終了・GUI lease解放済み。"
     }
   ],
   "candidate": {
-    "source_sha": "b02a41ebe4aee1d5031a10e60adf3967c4127ab0",
-    "windows_run": 37077824712,
-    "windows_job": 111071546097,
-    "harness_run": 37077824705,
-    "package_artifact": 11258130170,
-    "artifact_sha256": "c165b95a6b82bc6772a1dfec2080eacd170dacc5d5e1748b9ac9350be9c18522",
-    "plugin_zip_sha256": "bfd559b0f251c7eef426dde3dd27d9662412118744e7869f02889afdd3c5c459",
-    "source_zip_sha256": "d4da00dedd6d43495c2acd2f557fb770f685314d6f0500f55f15c553cab697af",
-    "dll_sha256": "860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63",
+    "source_sha": "99f865252c2072441f91ddcb2309f9627015b850",
+    "windows_run": 37088286869,
+    "windows_job": 111102967005,
+    "harness_run": 37088286870,
+    "package_artifact": 11261243674,
+    "artifact_sha256": "dca2d4397536a62b5eeaa962cc10ecbeb3d0bff30267b2994a5689eb53c99854",
+    "plugin_zip_sha256": "c6a1664812bbb21833f95b7919737dbadb8f6150b3cf786c6e17aceb06f82925",
+    "source_zip_sha256": "1bc2816b81ba6a1e8972df1ee4d141500a59b80a74737446021a99179330a210",
+    "dll_sha256": "ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5",
     "obs_version": "32.2.2",
     "qt_version": "6.11.1",
     "locales": [
       "en-US",
       "ja-JP"
     ],
-    "evidence_report": "docs/verification/mvp-2026-10-03.md",
-    "identity_rule": "後続の文書HEAD/昇格HEADはPRで別に記録し、候補以降の製品/build/依存/locale差分ゼロを確認する。再生成した別DLLへGUI passを移さない。"
+    "evidence_report": "docs/verification/mvp-2026-10-03-package.md",
+    "integration_sha": "8b7da0d2eca6a2c8ed14866f3bd5f4f2be3c3ae1",
+    "identity_rule": "PR19の実source SHA99fとsquash8b7はtree5fc23910dab6f465c4098a73b0a2336751215f21が一致。後続文書/昇格HEADは別記し製品/build/依存/locale差分ゼロを確認する。別DLLへGUI passを転用しない。"
   },
   "coverage_not_exercised": {
     "status": "pending",
@@ -93,7 +94,7 @@
     ],
     "qt_scale_factor": 1,
     "restored": "Windows設定でmonitor2の100%・元の解像度/向きを読戻し。monitor1は変更なし",
-    "observed": "100%日本語dark/Light、150%英語Lightで起動、200%日本語darkで起動。値/単位/更新・scroll・200% float/re-dock・100%復元後更新・通常終了を観察。",
-    "limits": "mixed-DPIモニター移動は未実施。旧744候補のQt限定倍率/実OS DPI試験とは別の新DLL実観察。"
+    "observed": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。標準Stats並置、Yami Default dark/Light、ja-JP/en-US、約157px狭幅から約350pxへの拡大、単位折返しと縦scroll、float/re-dock、タブ、矢印/EnterのGPU選択を観察。狭幅では横scrollbarも表示。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light、200%日本語darkで起動、値/単位/更新、GPUまでのscroll、200%float/re-dockと再表示、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。",
+    "limits": "mixed-DPI移動は未実施。旧744/b02候補とは別の新99f DLLを実観察。"
   }
 }
