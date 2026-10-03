@@ -2,7 +2,7 @@
   "issue": 7,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "QA #8で744a628候補のテーマ・操作・言語・実OS100/150/200%・録画・終了を確認。mixed-DPI移動と長時間配信等は#13にpendingとして移管。",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。テーマ・操作・言語・実OS100/150/200%・録画・終了を確認。拡張条件は#13。",
   "references": [
     "https://github.com/shinma06/obs-process-monitor/issues/5",
     "https://github.com/shinma06/obs-process-monitor/issues/8",
@@ -27,7 +27,7 @@
       ],
       "expected": "単位・分母・初回/非対応/失敗・欠損total・異常数値を正しく表示し、GUI外で計測、pause/resumeでbaselineをreset、in-flight終了をjoin、失敗後回復する",
       "status": "pass",
-      "evidence": "固定HEAD 901585b7419ad5a91ba2d32c5c69afcf8f5e0b83: Windows run37014635327 job110862380182のui-presentation/ui-workerを含む全4 CTest成功。合成の初回・非対応・取得不可・stale・in-flight世代・pause/resume・join・失敗回復を確認。実機再現とは区別。"
+      "evidence": "固定HEAD 901585b7419ad5a91ba2d32c5c69afcf8f5e0b83: Windows run37014635327 job110862380182のui-presentation/ui-workerを含む全4 CTest成功。合成の初回・非対応・取得不可・stale・in-flight世代・pause/resume・join・失敗回復を確認。実機再現とは区別。 依存修正後の統合候補b02はrun37077824712/job111071546097で同じ4 CTest/build/package成功。新GUI受入は docs/verification/mvp-2026-10-03.md。"
     },
     {
       "id": "windows-build",
@@ -36,7 +36,7 @@
       ],
       "expected": "C++/Qt/OBS の compile/link と package が成功する",
       "status": "pass",
-      "evidence": "固定HEAD 901585b7419ad5a91ba2d32c5c69afcf8f5e0b83: Windows run37014635327成功。OBS32.2.2 / Qt6.11.1 / MSVC19.51.36260.0、DLL SHA-256 452317326dcc4e1592571abfef846af27fa09652ed32b80cda46450ed5f29c3b。統合候補744a6281ac298b7042b09a10cdef74e768dd080eの別buildもrun37015281867で4 CTest/build/package成功。"
+      "evidence": "固定HEAD 901585b7419ad5a91ba2d32c5c69afcf8f5e0b83: Windows run37014635327成功。OBS32.2.2 / Qt6.11.1 / MSVC19.51.36260.0、DLL SHA-256 452317326dcc4e1592571abfef846af27fa09652ed32b80cda46450ed5f29c3b。統合候補744a6281ac298b7042b09a10cdef74e768dd080eの別buildもrun37015281867で4 CTest/build/package成功。 依存修正後の統合候補b02はrun37077824712/job111071546097で同じ4 CTest/build/package成功。新GUI受入は docs/verification/mvp-2026-10-03.md。"
     },
     {
       "id": "native-theme-dpi-resize",
@@ -48,7 +48,7 @@
       ],
       "expected": "OBS font/palette/spacingに追従し、数値と単位と状態が欠けず、縦scrollと折り返しで読める。テーマ変更後も固定色やfontを持たない",
       "status": "pass",
-      "evidence": "固定source744a6281ac298b7042b09a10cdef74e768dd080e、同package DLL/locale。10月2日にYami Default/Light、Stats並置、日本語/英語、狭幅/拡大、float/re-dock、タブ、scroll、Tab+矢印GPU選択、実OS100%とQt限定150/200%を観察。PR #12のP1後、10月3日にはWindows設定で主モニターを実OS150→200%に変更し、QT_SCALE_FACTOR=1で値/単位/更新、短いviewportのscroll、200%のfloat/re-dockを観察。元の100%へ復元・設定を読戻し、通常終了を確認。必要な実OS DPI CaseをQt試験で代替していない。詳細 docs/verification/mvp-2026-10-02.md。mixed-DPIモニター移動は未実施で#13。"
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。標準Stats並置、Yami Original(Default dark)/Light、ja-JP/en-US、約155pxの狭幅から拡大、短いviewportのscroll、float/re-dock、タブ、Tab/矢印GPU選択を観察。狭幅では単位の折返しと縦横scrollで項目に到達。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語/Light、200%日本語/darkで再起動し、値/単位/更新/scroll、200% float/re-dock、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。"
     },
     {
       "id": "live-states-and-lifecycle",
@@ -59,7 +59,7 @@
       ],
       "expected": "初回/非対応/取得不可を文字で区別し、欠損を0%にしない。CPUは再表示時の差分基準から再計測し、workerが安全に終了してhang/crashしない",
       "status": "pass",
-      "evidence": "同候補で計測中→現在値、非表示後の再計測、2 GPU切替・真のzeroを観察。3 GUI sessionの通常終了と再起動、unloaded・OBS memory leaks 0・process消失を確認。高CPU実負荷は#6 native CLI、unavailable/unsupported/stale/例外は同候補CTestで検証。実driver障害は未再現。詳細 docs/verification/mvp-2026-10-02.md。"
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。NVIDIA/AMDの切替と異なる専用メモリ容量、AMDの実測0.0%を観察。非表示/再表示・float後に計測中と旧fill消去、新しい現在値への復帰を確認。unavailable/unsupported/stale/異常数値/例外回復は同候補の合成CTestで確認し、実driver障害とは区別する。2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。Color Source、音声ミュート、1280x720/30fps/NVENC H.264、CBR6000kbps/AAC160kbpsを約331秒録画し正常停止。Statsでrender lag 0/13622、encode lag 0/9933。表示/非表示各30秒のOBS全体CPU 0.5663%/0.4230%、差+0.1433 percentage points。単純scene・単回・1台の参考値でplugin単独負荷や配信性能を表さない。3 GUI sessionとも通常終了、unloaded・OBS memory leaks 0・process消失。Windows設定終了とGUI lease解放を確認。 高CPU実負荷は#6の旧CLI試験の履歴であり、新DLLの高負荷試験とはしない。"
     },
     {
       "id": "recording-streaming-overhead",
@@ -69,7 +69,7 @@
       ],
       "expected": "1Hzのバックグラウンド計測が、確認したローカル録画条件でUI応答や録画を阻害しない。一般性能や配信の保証と区別する",
       "status": "pass",
-      "evidence": "約251秒のColor Source録画、render/encode lag 0。各30秒の表示/非表示でOBS全体CPU 0.7742%/0.6179%、差+0.1563 percentage points。1台・単純scene・単回測定の参考値でplugin単独負荷や配信の証拠ではない。UI更新/操作/再開を観察。詳細 docs/verification/mvp-2026-10-02.md、拡張は#13。"
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。Color Source、音声ミュート、1280x720/30fps/NVENC H.264、CBR6000kbps/AAC160kbpsを約331秒録画し正常停止。Statsでrender lag 0/13622、encode lag 0/9933。表示/非表示各30秒のOBS全体CPU 0.5663%/0.4230%、差+0.1433 percentage points。単純scene・単回・1台の参考値でplugin単独負荷や配信性能を表さない。3 GUI sessionとも通常終了、unloaded・OBS memory leaks 0・process消失。Windows設定終了とGUI lease解放を確認。"
     },
     {
       "id": "independent-review",

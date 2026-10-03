@@ -2,7 +2,7 @@
   "issue": 8,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "PMが固定候補と同じlocaleで必要Caseを実OBS観察。実OS150/200%はP1後にWindows設定で追加確認し100%へ復元。mixed-DPI移動・長時間配信等の未観察は#13でpending、passに含めない。",
+  "gui_reason": "依存修正後の新b02a41e DLLで必要Caseを再観察。旧744 DLLのpassは転用していない。実OS100/150/200%を確認し100%へ復元。追加条件は#13でpending。",
   "cases": [
     {
       "id": "artifact-load-and-update",
@@ -13,7 +13,7 @@
       ],
       "expected": "識別した DLL がロードされ、CPU/RAM/GPU の現在値と更新状態を読み取れる",
       "status": "pass",
-      "evidence": "2026-10-02 PM、Windows11 x64、portable OBS32.2.2/Qt6.11.1。source 744a6281ac298b7042b09a10cdef74e768dd080e、DLL 2a0c65542764933cf37fd9559db3222bb8b3c7a1bc95ce1e6a619a334b743a94、package/manifest/localeを照合。実ロードmoduleとログのsourceが一致し、System/OBS/GPUの約1Hz更新・単位を観察。Windows run37015281867全4 CTest/build/package成功。詳細 docs/verification/mvp-2026-10-02.md。"
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。manifest/ZIP/locale/source ZIPを照合し、3回の実ロードmodule hashとログsourceが一致。System/OBS CPU/RAM・GPU/VRAM・更新時刻の約1Hz更新を観察。Windows run37077824712 / job111071546097で28依存回帰、解決した5 package configの検査、DLL/4 CTest/package成功。"
     },
     {
       "id": "native-theme-and-layout",
@@ -25,7 +25,7 @@
       ],
       "expected": "読めない文字、欠けた数値、固定色、到達不能な操作がなく、テーマと表示スケールへ追従する",
       "status": "pass",
-      "evidence": "標準Stats並置、Yami dark/Default/Light、狭幅・拡大、float/re-dock、タブ、Tab/矢印GPU選択を確認。10月2日に実OS100%の日本語、Qt限定150%の英語・200%の日本語、scrollを観察。10月3日にP1を受け、Windows設定で主モニター実OS150/200%を追加確認（Qt追加倍率1）、値/単位/更新、短いviewportのscroll、200% float/re-dockを観察。元の100%を読戻して復元済み。mixed-DPI移動のみ#13で未観察。詳細 docs/verification/mvp-2026-10-02.md。"
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。標準Stats並置、Yami Original(Default dark)/Light、ja-JP/en-US、約155pxの狭幅から拡大、短いviewportのscroll、float/re-dock、タブ、Tab/矢印GPU選択を観察。狭幅では単位の折返しと縦横scrollで項目に到達。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語/Light、200%日本語/darkで再起動し、値/単位/更新/scroll、200% float/re-dock、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。"
     },
     {
       "id": "sampling-states-and-adapters",
@@ -36,7 +36,7 @@
       ],
       "expected": "表示対象を区別でき、取得できない値を 0 と誤表示せず、安全に再開する",
       "status": "pass",
-      "evidence": "実OBSで内蔵/単体GPUの選択・異なる容量/使用量、内蔵GPUの真の0.0%を観察。非表示/再表示時は計測中表示となり旧fillを残さず新しい区間へ復帰。取得不可・非対応・stale・異常数値・例外後回復は同候補Windows CIの合成CTestで確認し、実driver障害とは区別。詳細 docs/verification/mvp-2026-10-02.md。"
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。NVIDIA/AMDの切替と異なる専用メモリ容量、AMDの実測0.0%を観察。非表示/再表示・float後に計測中と旧fill消去、新しい現在値への復帰を確認。unavailable/unsupported/stale/異常数値/例外回復は同候補の合成CTestで確認し、実driver障害とは区別する。"
     },
     {
       "id": "recording-and-lifecycle",
@@ -47,27 +47,27 @@
       ],
       "expected": "録画中にパネルが応答し、通常終了後に OBS プロセスが残らない",
       "status": "pass",
-      "evidence": "同DLLで約251秒の1280x720/30fps/x264録画を正常停止。Statsのrender lag 0/15331、encode lag 0/7534。表示/非表示各30秒のOBS全体CPU 0.7742%/0.6179%（短時間参考値、配信試験ではない）。3 GUI sessionを通常終了しunloaded・OBS memory leaks 0・process消失。200%準備中にoperatorが中止した非対話processは正常終了証拠から除外。GUI lease解放。詳細 docs/verification/mvp-2026-10-02.md。"
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。Color Source、音声ミュート、1280x720/30fps/NVENC H.264、CBR6000kbps/AAC160kbpsを約331秒録画し正常停止。Statsでrender lag 0/13622、encode lag 0/9933。表示/非表示各30秒のOBS全体CPU 0.5663%/0.4230%、差+0.1433 percentage points。単純scene・単回・1台の参考値でplugin単独負荷や配信性能を表さない。3 GUI sessionとも通常終了、unloaded・OBS memory leaks 0・process消失。Windows設定終了とGUI lease解放を確認。"
     }
   ],
   "candidate": {
-    "source_sha": "744a6281ac298b7042b09a10cdef74e768dd080e",
-    "windows_run": 37015281867,
-    "windows_job": 110864515733,
-    "harness_run": 37015282185,
-    "package_artifact": 11229044622,
-    "artifact_sha256": "952f7485aafa3941320d4b298069008d05ff7e0c77b83834b42a3f6b100fad99",
-    "plugin_zip_sha256": "9e7643cf6631d8d6d384e6924449f312a7206e419b0d5da3581350ca8748ddd7",
-    "source_zip_sha256": "1ca0dae9484ed0b60a2808faa0940a9bbda0995d9d526af5c8e485f5ac42d9ac",
-    "dll_sha256": "2a0c65542764933cf37fd9559db3222bb8b3c7a1bc95ce1e6a619a334b743a94",
+    "source_sha": "b02a41ebe4aee1d5031a10e60adf3967c4127ab0",
+    "windows_run": 37077824712,
+    "windows_job": 111071546097,
+    "harness_run": 37077824705,
+    "package_artifact": 11258130170,
+    "artifact_sha256": "c165b95a6b82bc6772a1dfec2080eacd170dacc5d5e1748b9ac9350be9c18522",
+    "plugin_zip_sha256": "bfd559b0f251c7eef426dde3dd27d9662412118744e7869f02889afdd3c5c459",
+    "source_zip_sha256": "d4da00dedd6d43495c2acd2f557fb770f685314d6f0500f55f15c553cab697af",
+    "dll_sha256": "860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63",
     "obs_version": "32.2.2",
     "qt_version": "6.11.1",
     "locales": [
       "en-US",
       "ja-JP"
     ],
-    "evidence_report": "docs/verification/mvp-2026-10-02.md",
-    "identity_rule": "後続の文書HEAD/昇格HEADはPRで別に記録する。再生成した別DLLへGUI passを移さない。"
+    "evidence_report": "docs/verification/mvp-2026-10-03.md",
+    "identity_rule": "後続の文書HEAD/昇格HEADはPRで別に記録し、候補以降の製品/build/依存/locale差分ゼロを確認する。再生成した別DLLへGUI passを移さない。"
   },
   "coverage_not_exercised": {
     "status": "pending",
@@ -93,8 +93,7 @@
     ],
     "qt_scale_factor": 1,
     "restored": "Windows設定でmonitor2の100%・元の解像度/向きを読戻し。monitor1は変更なし",
-    "observed": "150%起動、起動中200%変更、数値/単位/更新、scrollによる全項目到達、200% float/re-dock、100%復元後更新、通常終了",
-    "limits": "mixed-DPIモニター移動は未実施。Qt限定倍率の前日試験とは別の実観察",
-    "review_finding": "https://github.com/shinma06/obs-process-monitor/pull/12#discussion_r4166694852"
+    "observed": "100%日本語dark/Light、150%英語Lightで起動、200%日本語darkで起動。値/単位/更新・scroll・200% float/re-dock・100%復元後更新・通常終了を観察。",
+    "limits": "mixed-DPIモニター移動は未実施。旧744候補のQt限定倍率/実OS DPI試験とは別の新DLL実観察。"
   }
 }
