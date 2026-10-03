@@ -1,9 +1,10 @@
 [CmdletBinding()]
 param(
-    [string]$PackageScript = (Join-Path $PSScriptRoot 'package-windows.ps1'),
+    [string]$PackageScript = '',
     [switch]$ExpectLegacyLeaks
 )
 $ErrorActionPreference = 'Stop'
+if (-not $PackageScript) { $PackageScript = Join-Path $PSScriptRoot 'package-windows.ps1' }
 $packageText = Get-Content -LiteralPath $PackageScript -Raw
 $fixtureRoot = Join-Path ([IO.Path]::GetTempPath()) ('obs-package-inputs-' + [guid]::NewGuid().ToString('N'))
 $oldGlobalConfig = $env:GIT_CONFIG_GLOBAL

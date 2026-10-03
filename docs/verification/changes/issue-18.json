@@ -12,7 +12,7 @@
       ],
       "expected": "未追跡のroot/nested header、data、CMake入力、ignore済み入力とtracked staged/unstaged差分を拒否する。既知生成物と限定Python cacheは許可し、実package entryはfresh configure後clean buildへ到達する。filenameを拒否ログに出さない。",
       "status": "pass",
-      "evidence": "2026-10-03 package-fix-agent / PowerShell 7.6.5 / local Windows。独立temp Gitで15ケース成功。旧baseでは11未追跡ケースがbuild境界へ到達し、tracked変更2ケースのみ拒否する漏れを再現。新scriptは全未追跡ケースをconfigure/build前に拒否。正常2・未追跡11・追跡差分2件。"
+      "evidence": "2026-10-03 package-fix-agent / PowerShell 7.6.5 とWindows PowerShell 5.1 / local Windows。独立temp Gitで各15ケース成功。独立レビューのPS5.1 param既定値指摘は本文でpath補完する修正後に再実行した。旧baseでは11未追跡ケースがbuild境界へ到達し、tracked変更2ケースのみ拒否する漏れを再現。新scriptは全未追跡ケースをconfigure/build前に拒否。正常2・未追跡11・追跡差分2件。"
     },
     {
       "id": "removed-cmake-input-cache",

@@ -31,6 +31,8 @@ jobs:
       - name: Verify package inputs and fresh configure
         run: |
           scripts/test-package-inputs.ps1
+          powershell -NoProfile -File scripts/test-package-inputs.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cmake -P scripts/test-package-cache.cmake
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify dependency hash rejection
