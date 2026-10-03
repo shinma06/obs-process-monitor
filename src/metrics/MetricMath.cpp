@@ -114,8 +114,9 @@ std::optional<GpuInstance> parseEngineInstance(std::wstring_view name)
     GpuInstance result{};
     if (!consume(name, L"pid_") || !number(name, result.process, 10) || !consume(name, L"_") ||
         !adapter(name, result) || !consume(name, L"_eng_") || !number(name, result.engine, 10) ||
-        !consume(name, L"_engtype_") || name.empty())
+        !consume(name, L"_engtype_"))
         return std::nullopt;
+    // The type label may be empty; only the numeric fields identify the engine.
     return result;
 }
 

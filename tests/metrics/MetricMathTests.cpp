@@ -98,18 +98,51 @@ void parsingTests()
             engine->engine == 11 && engine->process == 123, "LUID/process/physical/engine parsing");
     require(parseEngineInstance(L"pid_0_luid_0x00000000_0x00000000_phys_0_eng_0_engtype_3D#1").has_value(),
             "duplicate alias parsing");
+    engine = parseEngineInstance(
+        L"pid_4294967295_luid_0xFFFFFFFF_0xFFFFFFFF_phys_4294967295_eng_4294967295_engtype_3D");
+    require(engine && engine->luid == std::numeric_limits<std::uint64_t>::max() &&
+            engine->physical == std::numeric_limits<std::uint32_t>::max() &&
+            engine->engine == std::numeric_limits<std::uint32_t>::max() &&
+            engine->process == std::numeric_limits<std::uint32_t>::max(), "maximum engine identifiers");
     for (const auto *invalid : {
              L"_Total", L"pid_123_luid_0x1_0x12345678_phys_0_eng_0_engtype_3D",
              L"pid_4294967296_luid_0x00000000_0x12345678_phys_0_eng_0_engtype_3D",
+             L"pid__luid_0x00000000_0x12345678_phys_0_eng_0_engtype_",
+             L"pid_-1_luid_0x00000000_0x12345678_phys_0_eng_0_engtype_",
              L"pid_1_luid_0x0000000Z_0x12345678_phys_0_eng_0_engtype_3D",
+             L"pid_1_luid_0x000000000_0x12345678_phys_0_eng_0_engtype_",
+             L"pid_1_luid_0x00000000_0x1234567Z_phys_0_eng_0_engtype_",
+             L"pid_1_luid_0x00000000_0x123456789_phys_0_eng_0_engtype_",
              L"pid_1_luid_0x00000000_0x12345678_phys_-1_eng_0_engtype_3D",
-             L"pid_1_luid_0x00000000_0x12345678_phys_0_eng_0_engtype_"})
+             L"pid_1_luid_0x00000000_0x12345678_phys__eng_0_engtype_",
+             L"pid_1_luid_0x00000000_0x12345678_phys_4294967296_eng_0_engtype_",
+             L"pid_1_luid_0x00000000_0x12345678_phys_0_eng__engtype_",
+             L"pid_1_luid_0x00000000_0x12345678_phys_0_eng_-1_engtype_",
+             L"pid_1_luid_0x00000000_0x12345678_phys_0_eng_4294967296_engtype_",
+             L"pid_1_luid_0x00000000_0x12345678_phys_0_eng_0",
+             L"pid_1_luid_0x00000000_0x12345678_phys_0_eng_0_engtype"})
         require(!parseEngineInstance(invalid), "malformed engine name accepted");
     auto memory = parseMemoryInstance(L"luid_0xABCDEF01_0x12345678_phys_2#1");
     require(memory && memory->luid == 0xABCDEF0112345678ULL && memory->physical == 2,
             "memory LUID/physical parsing");
     require(!parseMemoryInstance(L"luid_0x00000000_0x12345678_phys_0_extra"), "trailing memory name");
     require(!parseMemoryInstance(L"luid_0x00000000_0x12345678_phys_0#"), "empty duplicate suffix");
+}
+
+void emptyEngineTypeTests()
+{
+    const auto unnamed = parseEngineInstance(L"pid_123_luid_0x00000000_0x00000001_phys_2_eng_11_engtype_");
+    const auto alias = parseEngineInstance(L"pid_123_luid_0x00000000_0x00000001_phys_2_eng_11_engtype_#1");
+    const auto named = parseEngineInstance(L"pid_456_luid_0x00000000_0x00000001_phys_2_eng_11_engtype_3D");
+    require(unnamed && alias && named, "empty and named engine types must parse");
+    require(unnamed->luid == 1 && unnamed->physical == 2 && unnamed->engine == 11 &&
+            unnamed->process == 123, "empty type must preserve engine identity");
+    require(alias->luid == unnamed->luid && alias->physical == unnamed->physical &&
+            alias->engine == unnamed->engine && alias->process == unnamed->process,
+            "empty type duplicate must preserve engine identity");
+    percent(busiestEngine(1, {{*unnamed, available(30.0)}, {*alias, available(30.0)},
+                             {*named, available(20.0)}}), 50);
+    percent(busiestEngine(1, {{*unnamed, available(0.0)}}), 0);
 }
 
 void engineTests()
@@ -161,6 +194,7 @@ int main()
         processCpuTests();
         memoryTests();
         parsingTests();
+        emptyEngineTypeTests();
         engineTests();
         gpuMemoryTests();
         std::cout << "MetricMath: " << checks << " checks passed\n";
