@@ -1,8 +1,8 @@
 {
   "issue": 22,
   "integration": "develop",
-  "gui": "required",
-  "gui_reason": "GPU instanceの受入条件を修正するため、#21と統合した最終同一DLLでQA #8を再実施する。旧候補のGUI passは流用しない。",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。#21/#22統合後の最終同一DLLで必要GUI Caseを再観察。空type実driverの再現とは区別。",
   "references": [
     "https://github.com/shinma06/obs-process-monitor/issues/5",
     "https://github.com/shinma06/obs-process-monitor/issues/8",
@@ -36,10 +36,8 @@
         "固定HEADでWindows DLL build・全4 CTest・packageとWindows/Linux harnessを実行する"
       ],
       "expected": "固定依存によるMSVC build、全4 CTest、package、harnessが成功する",
-      "status": "pending",
-      "evidence": "このcommit作成時点でCI待ち。固定HEADの結果とrun/jobはPR/Issueへ追記し、最終QA文書で照合する。",
-      "next_owner": "metrics-agent / PM",
-      "next_action": "Draft PRの固定HEADとCI run/jobを読み戻して記録する"
+      "status": "pass",
+      "evidence": "PR23 HEADf58689132fcce85abf8d56515310a2bed0745612、Windows37092520768/job111115676164、Harness37092520758成功。最終統合source689では Windows37093185917/job111117681635、Harness37093185971全成功。PS5.1/7各20入力境界、7依存隔離、28既存prefix、hash拒否、新build tree/cache/header非継承、最終package config5件を確認。通常treeと実package新treeの双方で4 CTest成功。内外manifest、source ZIP commit、ZIP/DLL/locale hashを照合。3起動の実module hashとログsource一致。"
     },
     {
       "id": "independent-review",
@@ -47,10 +45,8 @@
         "writerとは別sessionに固定HEAD/base、parser/caller/集計と試験の差分を渡す"
       ],
       "expected": "未解決の具体的指摘0、CLI/CI成功、残GUI CaseのQA引継ぎを確認する",
-      "status": "pending",
-      "evidence": "このcommit作成時点で未実施。固定HEAD/baseの独立レビュー結果はPR/Issueへ記録する。",
-      "next_owner": "PM / qa_final_review",
-      "next_action": "固定HEADで独立レビューし、PRへ結果を記録する"
+      "status": "pass",
+      "evidence": "PM /rootがwriter metrics-agentとは別sessionでHEADf58689132fcce85abf8d56515310a2bed0745612/base3d7aad7e9e306fd1a33d8cf3e4f9946e0fbe47b3をレビュー。PR23 review5398744736、指摘0。auto5964974858も同HEADで完了0。squash347とのtreee4294d63f7cb5fd746daaef5d1dab226c9c1d0cc一致を確認。"
     },
     {
       "id": "final-integrated-gui",
@@ -59,10 +55,14 @@
         "GPU選択、数値/単位、初回/取得不可/真のゼロ、非表示再開、録画応答性、通常終了を観察する"
       ],
       "expected": "最終同一DLLの対象と状態を正しく表示し、安全に再開・終了する。空typeの実driver未再現は合成回帰の証拠と分ける",
-      "status": "pending",
-      "evidence": "GUI禁止の実装sessionでは未実施。QA https://github.com/shinma06/obs-process-monitor/issues/8#issuecomment-5964955873 へ初期条件・操作・期待・owner・再開条件を引継ぎ、#8→#22の参照を読戻した。",
-      "next_owner": "PM",
-      "next_action": "#21/#22統合、独立レビューと必要CI成功後、GUI leaseと最終候補を固定して#8で再QAする"
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。AMDの実測0.0%と6.7/485.8MiB、NVIDIAの非zeroと15.7GiB総量を確認。録画中の非表示/再表示、200%float直後の計測中・GPU確認中と旧fill消去、実測への復帰を観察。unavailable/unsupported/stale/異常値/例外回復/in-flight終了は同候補の合成CTestで確認。空engine typeは84 checksの合成回帰で、該当実driver障害を再現したとは扱わない。Color Source・音声mute、720p30/NVENC H.264 CBR6000/AAC160で228.578秒録画し正常停止。Stats render lag0/20420、encode lag0/6856。表示/非表示各30秒のOBS全体CPUは1.3149%/0.7419%、working set286.91/271.98MiB。差+0.5731 percentage pointsは他アプリ稼働中の単一ホスト・単純scene・単回参考値でplugin単独効果や配信性能ではない。3起動とも通常終了、unloaded、memory leaks0、process消失。OBS/設定のウィンドウ消失とGUI lease解放済み。"
     }
-  ]
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "issue": 8
+  }
 }

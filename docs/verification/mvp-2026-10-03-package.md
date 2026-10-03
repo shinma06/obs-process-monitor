@@ -1,5 +1,7 @@
 # 初期版の最終再受入（2026-10-03、package修正後）
 
+> この99f候補の記録は履歴です。現在候補の結果は[最終689受入](mvp-2026-10-03-final.md)を参照してください。
+
 QA [#8](https://github.com/shinma06/obs-process-monitor/issues/8)、親 [#5](https://github.com/shinma06/obs-process-monitor/issues/5)、package修正 [#18 / PR #19](https://github.com/shinma06/obs-process-monitor/pull/19)。PM /rootが新DLLを実観察しました。[旧b02記録](mvp-2026-10-03.md) のpassは転用していません。
 
 ## 識別と統合の対応

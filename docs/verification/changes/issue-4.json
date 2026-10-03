@@ -2,7 +2,7 @@
   "issue": 4,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "基盤と旧候補の履歴を保持。最終package修正後の新99f候補の実ロード・GUI・終了はQA #8で再観察済み。2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。このIssue固有の過去CLI/review証拠は保持し、現在候補の実機受入はfinal_candidate_acceptanceを参照。追加範囲#13はpending。",
   "cases": [
     {
       "id": "windows-fresh-build",
@@ -55,9 +55,9 @@
     }
   ],
   "final_candidate_acceptance": {
-    "source_sha": "99f865252c2072441f91ddcb2309f9627015b850",
-    "dll_sha256": "ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5",
-    "evidence_report": "docs/verification/mvp-2026-10-03-package.md",
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
     "issue": 8
   }
 }

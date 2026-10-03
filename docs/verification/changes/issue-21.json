@@ -1,8 +1,8 @@
 {
   "issue": 21,
   "integration": "develop",
-  "gui": "pending",
-  "gui_reason": "package依存の再生成で別DLLになるため、PMが#22と統合後の最終同一DLLをQA #8で再受入する。旧候補のpassを転用しない。main #14は新候補の必要Case完了まで保留。",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。最終同一DLLの必要GUI Caseを再実施。旧候補passを転用せず、main昇格の文書レビュー/現HEAD CIはPRで別途確認する。",
   "cases": [
     {
       "id": "package-input-boundary",
@@ -12,7 +12,7 @@
       ],
       "expected": "入力検査・新build tree・configure/build/CTest/install失敗の既存20ケースを維持し、package configureが専用依存modeを明示する。",
       "status": "pass",
-      "evidence": "2026-10-03 package-fix-agent / Windows PowerShell5.1とPowerShell7.6.5各20ケース成功。colon付きCMake定義をquoted argumentとして渡し、fixtureで正確なflagを確認した。"
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。Windows37093185917/job111117681635、Harness37093185971全成功。PS5.1/7各20入力境界、7依存隔離、28既存prefix、hash拒否、新build tree/cache/header非継承、最終package config5件を確認。通常treeと実package新treeの双方で4 CTest成功。内外manifest、source ZIP commit、ZIP/DLL/locale hashを照合。3起動の実module hashとログsource一致。"
     },
     {
       "id": "dependency-isolation",
@@ -20,8 +20,8 @@
         "cmake -P scripts/test-package-dependencies.cmake"
       ],
       "expected": "改変済みprebuilt/Qt/OBS source/object/installed libraryが通常開発では再利用される旧境界を再現し、package専用treeではarchiveから再生成して継承しない。共有archiveのhash不一致3種は拒否する。",
-      "status": "pending",
-      "evidence": "Owner: package-fix-agent / 最新Windows CI。7シナリオの小ZIP・実Windows依存helper fixture。OBS compile部分だけ境界assertに置換し、実OBS buildは製品CIで別途確認。localにCMakeなし。"
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。Windows37093185917/job111117681635、Harness37093185971全成功。PS5.1/7各20入力境界、7依存隔離、28既存prefix、hash拒否、新build tree/cache/header非継承、最終package config5件を確認。通常treeと実package新treeの双方で4 CTest成功。内外manifest、source ZIP commit、ZIP/DLL/locale hashを照合。3起動の実module hashとログsource一致。"
     },
     {
       "id": "existing-dependency-regression",
@@ -31,8 +31,8 @@
         "cmake -P scripts/test-package-cache.cmake"
       ],
       "expected": "archive hash拒否、既存28 prefix/cacheケース、plugin新build treeによる任意生成header非継承を維持する。",
-      "status": "pending",
-      "evidence": "Owner: package-fix-agent / 最新Windows CI。旧#18のpassを今回へ転用しない。"
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。Windows37093185917/job111117681635、Harness37093185971全成功。PS5.1/7各20入力境界、7依存隔離、28既存prefix、hash拒否、新build tree/cache/header非継承、最終package config5件を確認。通常treeと実package新treeの双方で4 CTest成功。内外manifest、source ZIP commit、ZIP/DLL/locale hashを照合。3起動の実module hashとログsource一致。"
     },
     {
       "id": "windows-build-package",
@@ -42,8 +42,8 @@
         "最終package内のQt/OBS config 5件とCMake cacheの専用dependency rootを照合"
       ],
       "expected": "固定OBS32.2.2/Qt6.11.1と既定toolchainで成功し、最終DLL/source SHA/manifest/hashが一致する。最終packageのLastTest.logを試験証拠にする。",
-      "status": "pending",
-      "evidence": "Owner: package-fix-agent / 最新Windows CI。push後にrun/job/artifactを確認する。"
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。Windows37093185917/job111117681635、Harness37093185971全成功。PS5.1/7各20入力境界、7依存隔離、28既存prefix、hash拒否、新build tree/cache/header非継承、最終package config5件を確認。通常treeと実package新treeの双方で4 CTest成功。内外manifest、source ZIP commit、ZIP/DLL/locale hashを照合。3起動の実module hashとログsource一致。"
     },
     {
       "id": "harness",
@@ -52,16 +52,16 @@
       ],
       "expected": "既存harness検証が成功する。",
       "status": "pass",
-      "evidence": "2026-10-03 package-fix-agent / Windows local、11 tests / POSIX専用1 skip、成功。push hookでも再検査する。"
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。Windows37093185917/job111117681635、Harness37093185971全成功。PS5.1/7各20入力境界、7依存隔離、28既存prefix、hash拒否、新build tree/cache/header非継承、最終package config5件を確認。通常treeと実package新treeの双方で4 CTest成功。内外manifest、source ZIP commit、ZIP/DLL/locale hashを照合。3起動の実module hashとログsource一致。"
     },
     {
       "id": "independent-review",
       "steps": [
-        "固定HEAD / base 3d7aad7e9e306fd1a33d8cf3e4f9946e0fbe47b3をPM別セッションへ渡す"
+        "固定HEAD689a46291bc80e2f5a1a995b75227ba0acb89495 / base347ce4848e34ce4ab3af10335fd3ac51ecacac67をwriterと別sessionのPMへ渡す"
       ],
       "expected": "archiveだけを共有するpackage入力境界と回帰の意味を確認し、未解決指摘がない。",
-      "status": "pending",
-      "evidence": "Owner: PM。writer停止・固定HEAD後に独立レビュー。"
+      "status": "pass",
+      "evidence": "PM /rootがwriter package-fix-agentとは別sessionで全変更/依存境界/fixtureをレビュー。最終PR24 review5398783964、未解決0。fixture backupの外側artifact混入指摘を解消。auto5964994460は689で03:30:24Z完了・追加0。squash6f59とtree一致をPM/qa_final_reviewが照合。"
     },
     {
       "id": "new-candidate-gui",
@@ -70,8 +70,14 @@
         "PMが予約済みportable OBSで実ロードと既存GUI Caseを再観察"
       ],
       "expected": "同じ識別済み最終DLLで必要Caseを満たした後にmain #14を昇格する。",
-      "status": "pending",
-      "evidence": "Owner: PM / QA #8。旧99f/b02等のGUI passは転用しない。初期OBS/Windows/Qt環境・操作・期待はQA #8とdocs/verification/mvp-2026-10-03.mdを参照し、両修正のdevelop統合/CI後に新artifact取得から再開。"
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。標準Stats並置、Yami Default darkからLightへのアプリ内変更、ja-JP/en-US、約157px狭幅から350px復元、単位折返し・縦scroll・横scrollbar、float/re-dockを観察。GPUからShift+Tab後のDownは選択を変えずscrollを0→20へ移し、続くTab→Upで追加クリックなしにAMD→NVIDIAへ切替。実Windows100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light起動、200%日本語dark起動、GPU/単位/更新時刻までscroll、200%float/再ドックを確認。主モニター100%・2560x1440横向きを復元・読戻し。AMDの実測0.0%と6.7/485.8MiB、NVIDIAの非zeroと15.7GiB総量を確認。録画中の非表示/再表示、200%float直後の計測中・GPU確認中と旧fill消去、実測への復帰を観察。unavailable/unsupported/stale/異常値/例外回復/in-flight終了は同候補の合成CTestで確認。空engine typeは84 checksの合成回帰で、該当実driver障害を再現したとは扱わない。Color Source・音声mute、720p30/NVENC H.264 CBR6000/AAC160で228.578秒録画し正常停止。Stats render lag0/20420、encode lag0/6856。表示/非表示各30秒のOBS全体CPUは1.3149%/0.7419%、working set286.91/271.98MiB。差+0.5731 percentage pointsは他アプリ稼働中の単一ホスト・単純scene・単回参考値でplugin単独効果や配信性能ではない。3起動とも通常終了、unloaded、memory leaks0、process消失。OBS/設定のウィンドウ消失とGUI lease解放済み。"
     }
-  ]
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "issue": 8
+  }
 }
