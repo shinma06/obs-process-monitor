@@ -25,8 +25,9 @@ function cmake {
     if ($ExpectLegacyLeaks) { throw 'FIXTURE_BUILD_REACHED' }
     if ($args -contains '--preset') {
         $fixtureState.Events.Add('configure')
-        if ($args[$args.IndexOf('--preset') + 1] -ne 'windows-x64' -or $args -notcontains '-B') {
-            throw 'Fixture expected the pinned preset and explicit new build tree.'
+        if ($args[$args.IndexOf('--preset') + 1] -ne 'windows-x64' -or $args -notcontains '-B' -or
+            $args -notcontains '-DOBS_PLUGIN_PACKAGE_BUILD:BOOL=ON') {
+            throw 'Fixture expected the pinned preset, explicit new build tree and isolated dependency mode.'
         }
         $fixtureState.BuildDir = $args[$args.IndexOf('-B') + 1]
         if ($fixtureState.BuildDir -notmatch '[\\/]out[\\/]package-[0-9a-f]{32}[\\/]build$' -or

@@ -39,6 +39,8 @@ jobs:
         run: cmake -P scripts/test-dependency-hash.cmake
       - name: Verify pinned dependency selection and cache reuse
         run: cmake -P scripts/test-dependency-prefix.cmake
+      - name: Verify package dependency isolation
+        run: cmake -P scripts/test-package-dependencies.cmake
       - name: Configure from pinned dependencies
         run: |
           cmake --preset windows-x64 2>&1 | Tee-Object -FilePath out/configure.log
@@ -77,6 +79,33 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Package DLL and source identity
         run: scripts/package-windows.ps1
+      - name: Verify packaged dependency locations
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $spec = Get-Content buildspec.json -Raw | ConvertFrom-Json
+          $manifests = @(Get-ChildItem -Path out/package-*/build-manifest.json)
+          if ($manifests.Count -ne 1) { throw 'Expected exactly one identified package.' }
+          $build = Join-Path $manifests[0].DirectoryName 'build'
+          $deps = Join-Path $build '.deps'
+          $qt = Join-Path $deps "obs-deps-qt6-$($spec.dependencies.qt6.version)-x64/lib/cmake"
+          $expected = @{
+            'libobs' = Join-Path $deps 'cmake'
+            'obs-frontend-api' = Join-Path $deps 'cmake'
+            'Qt6' = Join-Path $qt 'Qt6'
+            'Qt6Core' = Join-Path $qt 'Qt6Core'
+            'Qt6Widgets' = Join-Path $qt 'Qt6Widgets'
+          }
+          $cache = Get-Content (Join-Path $build 'CMakeCache.txt')
+          if ($cache -notcontains 'OBS_PLUGIN_PACKAGE_BUILD:BOOL=ON') { throw 'Package dependency isolation is disabled.' }
+          foreach ($package in $expected.Keys) {
+            if (-not (Test-Path -LiteralPath (Join-Path $expected[$package] "$($package)Config.cmake") -PathType Leaf)) { throw "Missing isolated config: $package" }
+            $pattern = '^' + [regex]::Escape($package) + '_DIR:[^=]+='
+            $entries = @($cache | Where-Object { $_ -cmatch $pattern })
+            if ($entries.Count -ne 1) { throw "Missing or ambiguous package cache: $package" }
+            $actual = $entries[0] -replace $pattern, ''
+            if ([IO.Path]::GetFullPath($actual) -ne [IO.Path]::GetFullPath($expected[$package])) { throw "Package reused external dependencies: $package" }
+            Write-Output "Verified isolated package: $package"
+          }
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: success()
         with:
