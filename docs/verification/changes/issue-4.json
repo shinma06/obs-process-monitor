@@ -2,7 +2,7 @@
   "issue": 4,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "ビルド基盤の実ロード・旧dock表示・通常終了をQA #8で予備確認済み。新計測/UIの受入は別候補で行う。",
+  "gui_reason": "基盤の予備確認は以下の履歴を保持。最終計測/UIと依存修正を含む新b02候補の実ロード・GUI・終了はQA #8で別途再観察済み。2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。",
   "cases": [
     {
       "id": "windows-fresh-build",
@@ -53,5 +53,11 @@
       "status": "pass",
       "evidence": "2026-10-02 PM /root。Windows11 x64、portable OBS32.2.2、source 7a6f50bfa878a3cf9825ca0fda1c6ee7af2c828d。実ロードmoduleのDLL hash 29ac58172e4364d9292ddfeb5bd79fbe7e4e4595e000290c5bb129de1fc23684を照合。Docksメニュー登録と旧CPU/RAM UI表示、通常終了、unloadedログ、プロセス消滅を確認。証拠 https://github.com/shinma06/obs-process-monitor/issues/8#issuecomment-5953486256 。#6/#7の新UI受入はこの結果で代替しない。"
     }
-  ]
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "b02a41ebe4aee1d5031a10e60adf3967c4127ab0",
+    "dll_sha256": "860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63",
+    "evidence_report": "docs/verification/mvp-2026-10-03.md",
+    "issue": 8
+  }
 }
