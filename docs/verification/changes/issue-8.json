@@ -1,0 +1,105 @@
+{
+  "issue": 8,
+  "integration": "develop",
+  "gui": "pass",
+  "gui_reason": "最終#21/#22修正後の689 DLLを新たに実観察。旧99f/b02等のpassは転用しない。実OS100/150/200%と復元を確認。追加範囲#13はpending。",
+  "cases": [
+    {
+      "id": "artifact-load-and-update",
+      "steps": [
+        "CI の source SHA と package/DLL SHA-256 を照合する",
+        "検証専用 portable OBS 32.2.2 に配置し、ログの source SHA とロードした DLL の hash を照合する",
+        "システム/OBS/GPU の対象・単位と継続更新を観察する"
+      ],
+      "expected": "識別した DLL がロードされ、CPU/RAM/GPU の現在値と更新状態を読み取れる",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。Windows37093185917/job111117681635、Harness37093185971全成功。PS5.1/7各20入力境界、7依存隔離、28既存prefix、hash拒否、新build tree/cache/header非継承、最終package config5件を確認。通常treeと実package新treeの双方で4 CTest成功。内外manifest、source ZIP commit、ZIP/DLL/locale hashを照合。3起動の実module hashとログsource一致。"
+    },
+    {
+      "id": "native-theme-and-layout",
+      "steps": [
+        "OBS 標準 dock とフォント・色・余白を並置比較する",
+        "用意されている標準テーマを切り替える",
+        "狭幅/拡大、float/re-dock、keyboard、言語を確認する",
+        "100/150/200% の表示スケールで配置を確認し、OS DPI と Qt の試験用スケールを区別して記録する"
+      ],
+      "expected": "読めない文字、欠けた数値、固定色、到達不能な操作がなく、テーマと表示スケールへ追従する",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。標準Stats並置、Yami Default darkからLightへのアプリ内変更、ja-JP/en-US、約157px狭幅から350px復元、単位折返し・縦scroll・横scrollbar、float/re-dockを観察。GPUからShift+Tab後のDownは選択を変えずscrollを0→20へ移し、続くTab→Upで追加クリックなしにAMD→NVIDIAへ切替。実Windows100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light起動、200%日本語dark起動、GPU/単位/更新時刻までscroll、200%float/再ドックを確認。主モニター100%・2560x1440横向きを復元・読戻し。"
+    },
+    {
+      "id": "sampling-states-and-adapters",
+      "steps": [
+        "複数 adapter の切り替えを観察する",
+        "初回計測・正常な 0・取得不可/非対応・失敗回復を、それぞれ実機と synthetic test の証拠に分けて確認する",
+        "dock を隠して再表示し、古い区間を新しい現在値として表示しないことを確認する"
+      ],
+      "expected": "表示対象を区別でき、取得できない値を 0 と誤表示せず、安全に再開する",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。AMDの実測0.0%と6.7/485.8MiB、NVIDIAの非zeroと15.7GiB総量を確認。録画中の非表示/再表示、200%float直後の計測中・GPU確認中と旧fill消去、実測への復帰を観察。unavailable/unsupported/stale/異常値/例外回復/in-flight終了は同候補の合成CTestで確認。空engine typeは84 checksの合成回帰で、該当実driver障害を再現したとは扱わない。"
+    },
+    {
+      "id": "recording-and-lifecycle",
+      "steps": [
+        "単一Color Sourceとミュート済み音声でローカル録画中の更新/応答性/負荷を確認する",
+        "dock 切替と通常終了・再起動を確認する",
+        "OBS ログで plugin のロード/解放、crash と残 worker の有無を確認する"
+      ],
+      "expected": "録画中にパネルが応答し、通常終了後に OBS プロセスが残らない",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。Color Source・音声mute、720p30/NVENC H.264 CBR6000/AAC160で228.578秒録画し正常停止。Stats render lag0/20420、encode lag0/6856。表示/非表示各30秒のOBS全体CPUは1.3149%/0.7419%、working set286.91/271.98MiB。差+0.5731 percentage pointsは他アプリ稼働中の単一ホスト・単純scene・単回参考値でplugin単独効果や配信性能ではない。3起動とも通常終了、unloaded、memory leaks0、process消失。OBS/設定のウィンドウ消失とGUI lease解放済み。"
+    }
+  ],
+  "candidate": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "windows_run": 37093185917,
+    "windows_job": 111117681635,
+    "harness_run": 37093185971,
+    "package_artifact": 11262922424,
+    "artifact_sha256": "3eb0c5b54d194824f384df0212c83d80932115a54c08c24a220dc665df5d1789",
+    "plugin_zip_sha256": "9652695d9d3a4f5fcbfa92137d6b0a3df0453a111adb88abf3f5e4bce025c73e",
+    "source_zip_sha256": "2cf1f37d979aa28bd7919f18a4d4ea566cf25d14bc9a08e3c3a6b880226f0665",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "obs_version": "32.2.2",
+    "qt_version": "6.11.1",
+    "locales": [
+      "en-US",
+      "ja-JP"
+    ],
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "integration_sha": "6f59a70675f6e87f02e6784c7d8a9bf742201c33",
+    "identity_rule": "PR24実source689とsquash6f59のtree2443f5054f14cd2c888a4761df9306b0d03b91e9一致。後続文書HEAD/昇格HEADは別記し、製品/build/依存/locale差分ゼロを独立確認する。別DLLへ受入を転用しない。"
+  },
+  "coverage_not_exercised": {
+    "status": "pending",
+    "owner": "PM",
+    "issue": "https://github.com/shinma06/obs-process-monitor/issues/13",
+    "conditions": [
+      "mixed-DPIモニター間移動",
+      "長時間・複雑scene・配信",
+      "複数processor group実機",
+      "GPU driver再初期化"
+    ],
+    "next_action": "専用環境と長時間試験枠を確保し、#13で候補を固定して検証する。初期版必要Caseとは別範囲。"
+  },
+  "native_os_dpi": {
+    "date": "2026-10-03",
+    "status": "pass",
+    "observer": "PM",
+    "original": "main monitor2: 100%, 2560x1440 landscape; secondary monitor1: 100%, 1080x1920 portrait",
+    "tested": [
+      100,
+      150,
+      200
+    ],
+    "qt_scale_factor": 1,
+    "restored": "Windows設定でmonitor2の100%・元の解像度/向きを読戻し。monitor1は変更なし",
+    "observed": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。標準Stats並置、Yami Default darkからLightへのアプリ内変更、ja-JP/en-US、約157px狭幅から350px復元、単位折返し・縦scroll・横scrollbar、float/re-dockを観察。GPUからShift+Tab後のDownは選択を変えずscrollを0→20へ移し、続くTab→Upで追加クリックなしにAMD→NVIDIAへ切替。実Windows100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light起動、200%日本語dark起動、GPU/単位/更新時刻までscroll、200%float/再ドックを確認。主モニター100%・2560x1440横向きを復元・読戻し。",
+    "limits": "mixed-DPI移動は未実施。旧744/b02/99fの受入は履歴、今回は新689 DLLを実観察。"
+  },
+  "historical_reports": [
+    "docs/verification/mvp-2026-10-02.md",
+    "docs/verification/mvp-2026-10-03.md",
+    "docs/verification/mvp-2026-10-03-package.md"
+  ]
+}

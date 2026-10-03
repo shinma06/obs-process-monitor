@@ -1,0 +1,68 @@
+{
+  "issue": 22,
+  "integration": "develop",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。#21/#22統合後の最終同一DLLで必要GUI Caseを再観察。空type実driverの再現とは区別。",
+  "references": [
+    "https://github.com/shinma06/obs-process-monitor/issues/5",
+    "https://github.com/shinma06/obs-process-monitor/issues/8",
+    "https://github.com/shinma06/obs-process-monitor/issues/21",
+    "https://github.com/shinma06/obs-process-monitor/pull/14#discussion_r4171456230"
+  ],
+  "cases": [
+    {
+      "id": "empty-engine-type-regression",
+      "steps": [
+        "空type、通常type、空typeの#1 aliasをparseし、数値identityと集計結果を確認する",
+        "PID/LUID/physical/engineの上限値、不正値、桁数、overflow、必須_engtype_区切り欠損の試験を実行する"
+      ],
+      "expected": "空typeだけを理由に有効なGPU行を拒否せず、同一process/engineのaliasは一度だけ集計する。実測ゼロは有効値で、不正な識別子は引き続き拒否する",
+      "status": "pass",
+      "evidence": "2026-10-03 Windows/MinGW C++17、-O2 -Wall -Wextra -Werror -pedantic。追加回帰は修正前に62check目のempty and named engine types must parseで失敗し、name.empty()拒否だけを除去後は全84 checks成功。ResourceSamplerのunknownEngineと数値group keyは変更なし。"
+    },
+    {
+      "id": "native-sampler-and-harness",
+      "steps": [
+        "既存Windows sampler CLIで実APIの初回・通常値・reset・終了を確認する",
+        "python scripts/check.pyとgit diff --checkを実行する"
+      ],
+      "expected": "実APIの通常経路とharnessが成功し、試験だけで空typeを返す実driverを再現したとは扱わない",
+      "status": "pass",
+      "evidence": "2026-10-03 Windows/MinGW、sampler --require-gpu --samples 15成功。2 adapterのGPU/専用メモリ、CPU/RAM、初回/reset、実CPU負荷、6回生成破棄のhandle数139→139を確認。空typeを返す実driverを再現したという意味ではない。python scripts/check.pyは11 tests実行（10成功、POSIX専用1 skip）、git diff --check成功。"
+    },
+    {
+      "id": "windows-build-and-tests",
+      "steps": [
+        "固定HEADでWindows DLL build・全4 CTest・packageとWindows/Linux harnessを実行する"
+      ],
+      "expected": "固定依存によるMSVC build、全4 CTest、package、harnessが成功する",
+      "status": "pass",
+      "evidence": "PR23 HEADf58689132fcce85abf8d56515310a2bed0745612、Windows37092520768/job111115676164、Harness37092520758成功。最終統合source689では Windows37093185917/job111117681635、Harness37093185971全成功。PS5.1/7各20入力境界、7依存隔離、28既存prefix、hash拒否、新build tree/cache/header非継承、最終package config5件を確認。通常treeと実package新treeの双方で4 CTest成功。内外manifest、source ZIP commit、ZIP/DLL/locale hashを照合。3起動の実module hashとログsource一致。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "writerとは別sessionに固定HEAD/base、parser/caller/集計と試験の差分を渡す"
+      ],
+      "expected": "未解決の具体的指摘0、CLI/CI成功、残GUI CaseのQA引継ぎを確認する",
+      "status": "pass",
+      "evidence": "PM /rootがwriter metrics-agentとは別sessionでHEADf58689132fcce85abf8d56515310a2bed0745612/base3d7aad7e9e306fd1a33d8cf3e4f9946e0fbe47b3をレビュー。PR23 review5398744736、指摘0。auto5964974858も同HEADで完了0。squash347とのtreee4294d63f7cb5fd746daaef5d1dab226c9c1d0cc一致を確認。"
+    },
+    {
+      "id": "final-integrated-gui",
+      "steps": [
+        "#21/#22統合後のsource、CI、package/DLL/locale hashを固定してQA #8の専用OBSへ配置する",
+        "GPU選択、数値/単位、初回/取得不可/真のゼロ、非表示再開、録画応答性、通常終了を観察する"
+      ],
+      "expected": "最終同一DLLの対象と状態を正しく表示し、安全に再開・終了する。空typeの実driver未再現は合成回帰の証拠と分ける",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。AMDの実測0.0%と6.7/485.8MiB、NVIDIAの非zeroと15.7GiB総量を確認。録画中の非表示/再表示、200%float直後の計測中・GPU確認中と旧fill消去、実測への復帰を観察。unavailable/unsupported/stale/異常値/例外回復/in-flight終了は同候補の合成CTestで確認。空engine typeは84 checksの合成回帰で、該当実driver障害を再現したとは扱わない。Color Source・音声mute、720p30/NVENC H.264 CBR6000/AAC160で228.578秒録画し正常停止。Stats render lag0/20420、encode lag0/6856。表示/非表示各30秒のOBS全体CPUは1.3149%/0.7419%、working set286.91/271.98MiB。差+0.5731 percentage pointsは他アプリ稼働中の単一ホスト・単純scene・単回参考値でplugin単独効果や配信性能ではない。3起動とも通常終了、unloaded、memory leaks0、process消失。OBS/設定のウィンドウ消失とGUI lease解放済み。"
+    }
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "issue": 8
+  }
+}

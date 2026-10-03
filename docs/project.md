@@ -4,24 +4,25 @@
 
 OBSにネイティブで備わっているパネルと思えるUIで、Windowsのハードウェアリソースをリアルタイム監視します。標準dockとの見た目・余白・文字・操作・テーマ・DPIの一貫性を受入の対象にします。独自の固定色や固定fontを標準UIの完成形として扱いません。色だけに依存せず、単位・測定対象・取得失敗を読み取れる表示にします。
 
-今のOBSプロセスCPU/RAMだけを最終仕様と解釈しません。今後の対象指標、システム全体とプロセス単位の区別、更新間隔、負荷許容値はそれぞれのIssueで決定します。未実装のGPU等を機能として宣伝しません。
+初期版はシステムとOBSのCPU/RAM、adapterごとのGPU使用率・専用メモリを対象にします。温度・電力・共有GPUメモリは対象外です。指標の追加や対応環境の拡張はIssueで受入を決め、未実装や未確認の環境を対応済みと宣伝しません。
 
 ## 現在の実装
 
 - C++ / Win32 API / Qt Widgets / OBS frontend API。runtimeにPythonやNodeを要求しません。
 - plugin-main.cpp: moduleとdockの登録・解除。
-- ProcessMonitorWidget.cpp / .hpp: GetProcessTimesによるCPU時間差分、GetProcessMemoryInfoによるworking set。1秒間隔のQTimer。
-- CPUは論理processor数で正規化。RAMバーは総物理メモリに対するOBS working setの割合。
-- 固定style sheetとピクセル指定があり、テーマ・DPIへの自然な統合は未達。
-- buildspecのOBS 30.2.2 / Qt 6.6.1は既存入力であり、互換性試験済み版ではありません。
+- src/metrics/: Win32 CPU時間差分、物理RAM/working set、DXGIのadapter列挙、PDHのGPU engine/専用メモリ。定義と取得失敗時の扱いは [metrics.md](metrics.md)。
+- src/ui/: GUI外のsnapshot workerと値の整形。非表示中は収集を休止し、再表示時に差分基準をreset。終了時は進行中の計測をjoin。
+- ProcessMonitorWidget.cpp / .hpp: 標準Qt Widgetsと約1秒間隔の描画。OBSのfont/palette/spacingを継承し、取得中/非対応/取得不可を文字で区別。GPU選択、縦scroll、en-US/ja-JPに対応。
+- CPUは全論理processorで正規化。OBS RAMバーは総物理メモリに対するworking setの割合。GPUは最も忙しいengineの使用率で、OBSプロセス単独の値ではない。
+- buildspecはOBS 32.2.2 / obs-deps 2026-07-15（Qt 6.11.1）を固定。Windows x64のbuild/実機受入結果はIssue別Caseに記録します。
 
 ## 開発と検証
 
 ハーネスはPython 3.11以上の標準ライブラリ、Git for Windows、Windows標準PowerShellを使用します。Linux CIでも共通部を確認します。入口は `python scripts/check.py`、診断は `python scripts/doctor.py`、hooksは `python scripts/bootstrap.py` です。
 
-製品の再現可能なbuild/testコマンドは未確立です。cmake/common/bootstrap.cmakeとCMakePresets.jsonがなく、依存hashにunknownが残っています。cmake --preset windows-x64を成功済み手順として案内しません。製品ソース・CMake・依存変更時はWindowsビルドと関連試験が必須で、基盤未整備中はblockedとして記録します。
+製品は [Windowsビルド手順](build-windows.md) の `cmake --preset windows-x64`、`cmake --build --preset windows-x64 --parallel`、`powershell -File scripts/package-windows.ps1` でbuild/packageします。製品ソース・CMake・依存変更時はWindowsのMSVCビルドと関連試験が必須です。実際のsource SHA、DLL SHA-256、CIの結果はIssue別Caseとartifact manifestで照合し、未実行の版をpassにしません。
 
-通常の統合先はdevelop、検証済み昇格先はmainです。初回ハーネスはmain向けtooling PRで導入し、統合後にmainからdevelopへの専用同期PRを作ります。branchの存在・同期・ruleset適用はIssue/PRでreadbackします。
+通常の統合先はdevelop、検証済み昇格先はmainです。初回ハーネスはPR #2でmainへ、PR #3でdevelopへ反映済みです。branchの存在・同期・ruleset適用はIssue/PRでreadbackします。
 
 作業と受入の正本はGitHub Issues / PR、Caseは [verification](verification/README.md)。Projectは一覧、Milestoneは実際の到達目標です。参照元のProject番号や既存claimは移植しません。独立レビューはwriterと別セッションで固定HEAD/baseを確認します。
 

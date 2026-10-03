@@ -1,0 +1,127 @@
+name: Windows plugin build
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-build:
+    name: windows-build (OBS 32.2.2, x64)
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 35
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Set up pinned CMake
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $archive = Join-Path $env:RUNNER_TEMP 'cmake-4.4.3-windows-x86_64.zip'
+          Invoke-WebRequest 'https://github.com/Kitware/CMake/releases/download/v4.4.3/cmake-4.4.3-windows-x86_64.zip' -OutFile $archive
+          $expected = '4d52ebab7193a698651639ed80d8d04fd903358843572cf44c7fd234cb7c26ab'
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected) { throw 'CMake download SHA256 mismatch.' }
+          Expand-Archive -LiteralPath $archive -DestinationPath $env:RUNNER_TEMP
+          (Join-Path $env:RUNNER_TEMP 'cmake-4.4.3-windows-x86_64/bin') | Add-Content $env:GITHUB_PATH
+      - name: Verify package inputs and isolated build
+        run: |
+          scripts/test-package-inputs.ps1
+          powershell -NoProfile -File scripts/test-package-inputs.ps1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake -P scripts/test-package-cache.cmake
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify dependency hash rejection
+        run: cmake -P scripts/test-dependency-hash.cmake
+      - name: Verify pinned dependency selection and cache reuse
+        run: cmake -P scripts/test-dependency-prefix.cmake
+      - name: Verify package dependency isolation
+        run: cmake -P scripts/test-package-dependencies.cmake
+      - name: Configure from pinned dependencies
+        run: |
+          cmake --preset windows-x64 2>&1 | Tee-Object -FilePath out/configure.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify resolved OBS and Qt packages
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $deps = (Resolve-Path '.deps').Path
+          $spec = Get-Content buildspec.json -Raw | ConvertFrom-Json
+          $qt = Join-Path $deps "obs-deps-qt6-$($spec.dependencies.qt6.version)-x64/lib/cmake"
+          $expected = @{
+            'libobs' = Join-Path $deps 'cmake'
+            'obs-frontend-api' = Join-Path $deps 'cmake'
+            'Qt6' = Join-Path $qt 'Qt6'
+            'Qt6Core' = Join-Path $qt 'Qt6Core'
+            'Qt6Widgets' = Join-Path $qt 'Qt6Widgets'
+          }
+          $cache = Get-Content build_x64/CMakeCache.txt
+          foreach ($package in $expected.Keys) {
+            $config = Join-Path $expected[$package] "$($package)Config.cmake"
+            if (-not (Test-Path -LiteralPath $config -PathType Leaf)) { throw "Missing pinned config: $package" }
+            $pattern = '^' + [regex]::Escape($package) + '_DIR:[^=]+='
+            $entries = @($cache | Where-Object { $_ -cmatch $pattern })
+            if ($entries.Count -ne 1) { throw "Missing or ambiguous package cache: $package" }
+            $actual = $entries[0] -replace $pattern, ''
+            if ([IO.Path]::GetFullPath($actual) -ne [IO.Path]::GetFullPath($expected[$package])) { throw "External package cache: $package = $actual" }
+            Write-Output "Verified pinned package: $package = $actual"
+          }
+      - name: Build DLL
+        run: |
+          cmake --build --preset windows-x64 --parallel 2>&1 | Tee-Object -FilePath out/build.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test C++ components and Windows sampler
+        run: |
+          ctest --test-dir build_x64 -C RelWithDebInfo --output-on-failure --no-tests=error 2>&1 | Tee-Object -FilePath out/test.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Package DLL and source identity
+        run: scripts/package-windows.ps1
+      - name: Verify packaged dependency locations
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $spec = Get-Content buildspec.json -Raw | ConvertFrom-Json
+          $manifests = @(Get-ChildItem -Path out/package-*/build-manifest.json)
+          if ($manifests.Count -ne 1) { throw 'Expected exactly one identified package.' }
+          $build = Join-Path $manifests[0].DirectoryName 'build'
+          $deps = Join-Path $build '.deps'
+          $qt = Join-Path $deps "obs-deps-qt6-$($spec.dependencies.qt6.version)-x64/lib/cmake"
+          $expected = @{
+            'libobs' = Join-Path $deps 'cmake'
+            'obs-frontend-api' = Join-Path $deps 'cmake'
+            'Qt6' = Join-Path $qt 'Qt6'
+            'Qt6Core' = Join-Path $qt 'Qt6Core'
+            'Qt6Widgets' = Join-Path $qt 'Qt6Widgets'
+          }
+          $cache = Get-Content (Join-Path $build 'CMakeCache.txt')
+          if ($cache -notcontains 'OBS_PLUGIN_PACKAGE_BUILD:BOOL=ON') { throw 'Package dependency isolation is disabled.' }
+          foreach ($package in $expected.Keys) {
+            if (-not (Test-Path -LiteralPath (Join-Path $expected[$package] "$($package)Config.cmake") -PathType Leaf)) { throw "Missing isolated config: $package" }
+            $pattern = '^' + [regex]::Escape($package) + '_DIR:[^=]+='
+            $entries = @($cache | Where-Object { $_ -cmatch $pattern })
+            if ($entries.Count -ne 1) { throw "Missing or ambiguous package cache: $package" }
+            $actual = $entries[0] -replace $pattern, ''
+            if ([IO.Path]::GetFullPath($actual) -ne [IO.Path]::GetFullPath($expected[$package])) { throw "Package reused external dependencies: $package" }
+            Write-Output "Verified isolated package: $package"
+          }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: success()
+        with:
+          name: obs-process-monitor-windows-x64-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            out/package-*/*.zip
+            out/package-*/*.json
+            out/package-*/SHA256SUMS.txt
+          if-no-files-found: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: windows-build-logs-${{ github.run_id }}
+          path: |
+            out/*.log
+            build_x64/CMakeFiles/CMakeConfigureLog.yaml
+            out/package-*/build/Testing/Temporary/LastTest.log
+            out/package-*/build/CMakeFiles/CMakeConfigureLog.yaml
+          if-no-files-found: ignore

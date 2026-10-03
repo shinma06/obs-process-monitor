@@ -1,0 +1,62 @@
+{
+  "issue": 15,
+  "integration": "develop",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。このIssue固有の過去CLI/review証拠は保持し、現在候補の実機受入はfinal_candidate_acceptanceを参照。追加範囲#13はpending。",
+  "cases": [
+    {
+      "id": "pinned-prefix-reuse",
+      "steps": [
+        "cmake -P scripts/test-dependency-prefix.cmake",
+        "固定base db5216dd0a373ae1129564550acb8dc85e7eeb95 の helper に同じ試験を実行して既存不具合を再現する"
+      ],
+      "expected": "新旧/同版の外部prefixを先行/後置しても、検証済み指定prefixだけを採用する。旧marker・不正な抽出状態では再展開し、正しい再利用は再展開しない。Qt/OBS package cacheは固定先へ揃い、破損archiveは停止する。",
+      "status": "pass",
+      "evidence": "2026-10-03 build-agent / Windows / CMake 4.4.3。小さなローカルZIPと実CMakeCacheを使った28ケース成功。旧base helperは最初の新版外部prefix+一致旧markerでprebuilt/Qtともskipし、固定prefix順序の検査が失敗して再現。PR CIでも同じ試験を実行する。"
+    },
+    {
+      "id": "windows-build-package",
+      "steps": [
+        "fresh Windows CIで固定archiveを取得し、SHA256と実VERSION表記を照合する",
+        "DLL build、既存4 CTest、package、hash負試験を実行する"
+      ],
+      "expected": "OBS 32.2.2 / Qt 6.11.1と既定toolchain/依存hashで成功し、manifestと実DLLのSHA256が一致する。",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。PR #16最終HEAD9f4579a377561a2f02420d65b58bb862faeb2585のrun37077506123/job111070562492と、統合b02のrun37077824712/job111071546097が成功。28依存回帰・fresh config実パス5件・hash試験・DLL/4 CTest/packageを確認。"
+    },
+    {
+      "id": "harness-checks",
+      "steps": [
+        "python scripts/check.py"
+      ],
+      "expected": "既存harnessの構文・リンク・hooks等の検証が成功する。",
+      "status": "pass",
+      "evidence": "2026-10-03 Windows local 11 tests、POSIX専用1 skip。最終PR HEADのrun37077506233、統合b02のrun37077824705でWindows/Linux harnessとmetric-math成功。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "固定HEAD / base db5216dd0a373ae1129564550acb8dc85e7eeb95をPM別セッションへ渡す"
+      ],
+      "expected": "PR #14のP2に対応する再利用/検索/cache修正と試験を確認し、未解決指摘がない。",
+      "status": "pass",
+      "evidence": "PM /rootがwriter build-agentと別セッションで最終HEAD9f4579a377561a2f02420d65b58bb862faeb2585 / base db5216dd0a373ae1129564550acb8dc85e7eeb95をレビュー。PR #16 review5397836571（初回全差分review5397780173＋最終3ファイル差分）、指摘0。squash b02とのtree一致を確認。PR #14のP2 threadは修正説明後resolve。"
+    },
+    {
+      "id": "new-dll-gui-acceptance",
+      "steps": [
+        "QA #8で新artifactのsource SHA / DLL SHA256を照合し、予約済みOBS環境へ配置する",
+        "新候補のロード・dock・計測・終了など必要GUI受入を実行する"
+      ],
+      "expected": "新しい識別DLLの必要Caseを満たし、main昇格PR #14の保留解除を判断できる。",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。manifest/ZIP/locale/source ZIPを照合し、3回の実ロードmodule hashとログsourceが一致。System/OBS CPU/RAM・GPU/VRAM・更新時刻の約1Hz更新を観察。Windows run37077824712 / job111071546097で28依存回帰、解決した5 package configの検査、DLL/4 CTest/package成功。2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。標準Stats並置、Yami Original(Default dark)/Light、ja-JP/en-US、約155pxの狭幅から拡大、短いviewportのscroll、float/re-dock、タブ、Tab/矢印GPU選択を観察。狭幅では単位の折返しと縦横scrollで項目に到達。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語/Light、200%日本語/darkで再起動し、値/単位/更新/scroll、200% float/re-dock、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。NVIDIA/AMDの切替と異なる専用メモリ容量、AMDの実測0.0%を観察。非表示/再表示・float後に計測中と旧fill消去、新しい現在値への復帰を確認。unavailable/unsupported/stale/異常数値/例外回復は同候補の合成CTestで確認し、実driver障害とは区別する。2026-10-03 PM /root、QA #8。source b02a41ebe4aee1d5031a10e60adf3967c4127ab0 / DLL 860675af92895d2dfb57a167af55a1993296573c720deec3a1c4d4644db28f63。詳細 docs/verification/mvp-2026-10-03.md。Color Source、音声ミュート、1280x720/30fps/NVENC H.264、CBR6000kbps/AAC160kbpsを約331秒録画し正常停止。Statsでrender lag 0/13622、encode lag 0/9933。表示/非表示各30秒のOBS全体CPU 0.5663%/0.4230%、差+0.1433 percentage points。単純scene・単回・1台の参考値でplugin単独負荷や配信性能を表さない。3 GUI sessionとも通常終了、unloaded・OBS memory leaks 0・process消失。Windows設定終了とGUI lease解放を確認。"
+    }
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "issue": 8
+  }
+}

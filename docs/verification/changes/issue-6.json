@@ -1,0 +1,72 @@
+{
+  "issue": 6,
+  "integration": "develop",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。このIssue固有の過去CLI/review証拠は保持し、現在候補の実機受入はfinal_candidate_acceptanceを参照。追加範囲#13はpending。",
+  "cases": [
+    {
+      "id": "metric-math",
+      "steps": [
+        "C++17 Release相当でMetricMath.cppとMetricMathTests.cppをbuildして実行する"
+      ],
+      "expected": "CPU時間差分・全CPU分母・初回/reset/失敗・RAM境界・GPU parser/adapter/engine集計が通る",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows x64 / 既存MinGW 13.2 / -O2 -Wall -Wextra -Werror -pedanticで67 checks pass。現在の固定HEADのMSVC/CI結果はPRで追跡。"
+    },
+    {
+      "id": "windows-live-sampling",
+      "steps": [
+        "WindowsでSamplerSmoke --require-gpu --samples 15を実行する",
+        "CPU実負荷・reset・6回のsampler生成破棄を確認する"
+      ],
+      "expected": "CPU/RAMが有効、初回は値なし、2 adapterのGPU/専用メモリが回復可能に取得され、handleが増え続けない",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows x64の内蔵+単体GPU環境で成功。両adapterの専用メモリを取得、GPU true zeroと非zeroを確認。1 adapterの使用率は最初の2区間でUnavailableの後にOkへ回復。CPU実負荷検出とreset通過。6回の生成破棄前後handle数は132/132。初回286ms、通常14区間は0.685〜27.555ms（大半1.1ms未満）。これはCLI計測時間でありOBS録画負荷の合格証拠ではない。"
+    },
+    {
+      "id": "windows-msvc-build",
+      "steps": [
+        "#4のbuild基盤を統合する",
+        "固定HEADをWindows/MSVCでpluginと計測テストまでbuildしてCTestを実行する"
+      ],
+      "expected": "Windows plugin buildと計測テストが成功する",
+      "status": "pass",
+      "evidence": "固定HEAD 913b5d0451230db898ce86f8dd79e27f39383e8b / base b3274fae40f5458ed75be221a9079790f61a2ee1。Windows MSVC19.51.36260.0のrun 37013580927 / job110858906843でDLL、CTest 2/2、package成功。Linux計算/harnessはrun37013581505成功。PR #11へ記録。"
+    },
+    {
+      "id": "harness",
+      "steps": [
+        "python scripts/check.pyを実行する"
+      ],
+      "expected": "文書・Case構文・既存harness回帰が通る",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows/Python 3.12でscripts/check.py成功。10 tests、POSIX専用1 skip。製品/GUI検証とは別の結果。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "固定HEAD/baseをwriterと別セッションでレビューする"
+      ],
+      "expected": "未解決の正確性・寿命・失敗回復の指摘がない",
+      "status": "pass",
+      "evidence": "PM /root がwriter metrics-agentと別セッションでHEAD 913b5d0451230db898ce86f8dd79e27f39383e8b / base b3274fae40f5458ed75be221a9079790f61a2ee1をレビューし、未解決指摘なし。PR #11 review5392403564。"
+    },
+    {
+      "id": "obs-live-and-environment-coverage",
+      "steps": [
+        "QA #8でUI統合後の固定DLL/source SHAを記録する",
+        "OBS内表示、録画中の負荷、dock切替、終了を確認する",
+        "複数processor group機とGPU driver再初期化の検証環境がある場合に追加確認する"
+      ],
+      "expected": "誤った0表示やadapter取り違えがなく、GUIを停止させずに実測値と取得不可を表す",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。AMDの実測0.0%と6.7/485.8MiB、NVIDIAの非zeroと15.7GiB総量を確認。録画中の非表示/再表示、200%float直後の計測中・GPU確認中と旧fill消去、実測への復帰を観察。unavailable/unsupported/stale/異常値/例外回復/in-flight終了は同候補の合成CTestで確認。空engine typeは84 checksの合成回帰で、該当実driver障害を再現したとは扱わない。Color Source・音声mute、720p30/NVENC H.264 CBR6000/AAC160で228.578秒録画し正常停止。Stats render lag0/20420、encode lag0/6856。表示/非表示各30秒のOBS全体CPUは1.3149%/0.7419%、working set286.91/271.98MiB。差+0.5731 percentage pointsは他アプリ稼働中の単一ホスト・単純scene・単回参考値でplugin単独効果や配信性能ではない。3起動とも通常終了、unloaded、memory leaks0、process消失。OBS/設定のウィンドウ消失とGUI lease解放済み。 旧99fの履歴はdocs/verification/mvp-2026-10-03-package.md。"
+    }
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "issue": 8
+  }
+}

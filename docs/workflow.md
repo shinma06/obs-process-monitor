@@ -61,4 +61,4 @@ mergeとcleanupを分けて確認します。remote実ref、local branch、track
 
 PR本文にIssue / Integration / Verification / GUI / GUI reasonを記録し、Caseは [verification](verification/README.md) に置く。develop PRはRefsを使い、残QAを自動closeしない。実装受入が完了しても親・QA・Milestoneを一括完了にしない。
 
-現状の自動CIはWindows/Linuxのharness-checksのみ。独立レビュー・Case充足・統合先の判定はPRで確認する必須の手動gate。専用coordinatorの成功を仮定しない。保護の適用は [GitHub設定](setup/github.md) と実APIのreadbackで確認する。
+自動CIはWindows/Linuxのharness-checks、Linuxの計算試験、WindowsのDLL build・CTest・package・依存hash試験です。独立レビュー・Case充足・統合先の判定はPRで確認する必須の手動gate。専用coordinatorの成功を仮定しない。保護の適用は [GitHub設定](setup/github.md) と実APIのreadbackで確認する。

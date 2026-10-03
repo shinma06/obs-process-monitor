@@ -1,0 +1,16 @@
+# Exercise the cached-archive verification without fetching OBS or starting a compiler.
+include("${CMAKE_CURRENT_LIST_DIR}/../cmake/common/buildspec_common.cmake")
+set(test_archive "${CMAKE_CURRENT_LIST_DIR}/../out/dependency-hash-test.txt")
+if(NEGATIVE_TEST)
+  _verify_dependency_archive("${test_archive}" "0000000000000000000000000000000000000000000000000000000000000000")
+  message(FATAL_ERROR "Invalid hash was accepted")
+endif()
+file(WRITE "${test_archive}" "known dependency fixture")
+file(SHA256 "${test_archive}" correct_hash)
+_verify_dependency_archive("${test_archive}" "${correct_hash}")
+execute_process(COMMAND "${CMAKE_COMMAND}" -DNEGATIVE_TEST=ON -P "${CMAKE_CURRENT_LIST_FILE}"
+  RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if(result EQUAL 0 OR NOT error MATCHES "Dependency SHA256 mismatch")
+  message(FATAL_ERROR "Corrupt cached archive was not rejected: ${output}${error}")
+endif()
+message(STATUS "Dependency hash validation accepts matching bytes and rejects corrupt cached bytes")

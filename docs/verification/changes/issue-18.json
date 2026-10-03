@@ -1,0 +1,71 @@
+{
+  "issue": 18,
+  "integration": "develop",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。このIssue固有の過去CLI/review証拠は保持し、現在候補の実機受入はfinal_candidate_acceptanceを参照。追加範囲#13はpending。",
+  "cases": [
+    {
+      "id": "package-inputs",
+      "steps": [
+        "powershell -File scripts/test-package-inputs.ps1",
+        "base f19c785132660e735a25e58953ccfd0a2cd0179e のpackage scriptを -PackageScript / -ExpectLegacyLeaks で同じfixtureに渡す"
+      ],
+      "expected": "未追跡/ignore済み製品入力と追跡差分を拒否し、既知生成物は許可する。汚れた旧build treeを残したまま新しい空treeを固定presetでconfigureし、同じtree/configでbuild/CTest/installへ進む。失敗時は次段階/公開artifactへ進まない。",
+      "status": "pass",
+      "evidence": "2026-10-03 package-fix-agent / Windows PowerShell5.1とPowerShell7.6.5各20ケース成功（正常2・未追跡11・追跡差分2・configure/identity/build/CTest/install失敗5）。実package scriptのnative境界を置換したtemp Git fixture。旧base f19c785132660e735a25e58953ccfd0a2cd0179eの15ケースで11未追跡入力の漏れを再現。旧build_x64/過去packageの残header/cacheを再利用しないこと、CTest失敗でinstall/ZIPへ進まないことを確認。実CMake/製品CTestは別Caseで追跡。"
+    },
+    {
+      "id": "removed-cmake-input-cache",
+      "steps": [
+        "cmake -P scripts/test-package-cache.cmake"
+      ],
+      "expected": "実CMakeでmodule削除後のcache値が通常configureに残り、生成headerが--fresh/clean後も残ること、新build treeがどちらも引き継がないことを確認する。",
+      "status": "pass",
+      "evidence": "2026-10-03 Windows37088286869/job111102967005、CMake4.4.3実fixture成功。削除module cache残留、--fresh/clean後の任意header残留、新tree非継承を確認。"
+    },
+    {
+      "id": "windows-build-package",
+      "steps": [
+        "fresh Windows CIの依存hash / 28 prefix回帰 / package入力回帰",
+        "configure / 実package config 5件 / DLL build / 4 CTest / package"
+      ],
+      "expected": "固定OBS32.2.2 / Qt6.11.1で成功し、専用新treeのconfigure/build/4 CTest/install後のDLL/manifest/source identityが一致する。最終package内CTestのLastTest.logを証拠とし、先行build_x64試験だけを転用しない。",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。内外manifest、ZIP/hash、source ZIP commit、localeを照合。3回の実ロードmodule hashとログsourceが一致。System/OBS CPU/RAM・GPU/VRAM・更新時刻の継続更新を観察。Windows37088286869/job111102967005、Harness37088286870全成功。最終package専用buildの4 CTest成功をログで確認。PS5.1/7各20ケース、28依存prefix回帰、hash、解決済みpackage config5件、通常build4 CTestおよび新規package build4 CTest、install/package成功。"
+    },
+    {
+      "id": "harness",
+      "steps": [
+        "python scripts/check.py"
+      ],
+      "expected": "harnessの既存検証が成功する。",
+      "status": "pass",
+      "evidence": "Windows local11 tests/POSIX専用1skip、Harness37088286870のWindows/Linux・metric-math全成功。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "固定HEAD/baseをwriterと別セッションのPMへ渡す"
+      ],
+      "expected": "入力例外、cache/build順序、回帰をレビューし、未解決欠陥がない。",
+      "status": "pass",
+      "evidence": "writer package-fix-agentとは別sessionのPM /root。HEAD99f865252c2072441f91ddcb2309f9627015b850/basef19c785132660e735a25e58953ccfd0a2cd0179e、PR19 review5398488736、未解決0。最新auto activity5964249216も99fで完了し追加指摘0。squash8b7とのtree一致はPMとqa_final_reviewが独立照合。"
+    },
+    {
+      "id": "new-candidate-gui",
+      "steps": [
+        "QA #8で新source SHA / DLL SHA256 / CI runと実ロードmoduleを照合",
+        "PMが予約済みportable OBSで必要GUI Caseと通常終了を再観察"
+      ],
+      "expected": "新DLLが必要Caseを満たしてからmain #14を昇格する。",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。AMDの実測0.0%と6.7/485.8MiB、NVIDIAの非zeroと15.7GiB総量を確認。録画中の非表示/再表示、200%float直後の計測中・GPU確認中と旧fill消去、実測への復帰を観察。unavailable/unsupported/stale/異常値/例外回復/in-flight終了は同候補の合成CTestで確認。空engine typeは84 checksの合成回帰で、該当実driver障害を再現したとは扱わない。Color Source・音声mute、720p30/NVENC H.264 CBR6000/AAC160で228.578秒録画し正常停止。Stats render lag0/20420、encode lag0/6856。表示/非表示各30秒のOBS全体CPUは1.3149%/0.7419%、working set286.91/271.98MiB。差+0.5731 percentage pointsは他アプリ稼働中の単一ホスト・単純scene・単回参考値でplugin単独効果や配信性能ではない。3起動とも通常終了、unloaded、memory leaks0、process消失。OBS/設定のウィンドウ消失とGUI lease解放済み。 旧99fの履歴はdocs/verification/mvp-2026-10-03-package.md。"
+    }
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "issue": 8
+  }
+}

@@ -2,7 +2,9 @@
 
 Windowsのハードウェアリソースをリアルタイムに監視し、OBS標準のパネルと見分けがつかないほど自然なUIで表示するOBS Studioプラグインです。
 
-現在はプロトタイプです。実装済みの測定は **OBSプロセス自身のCPU使用率とRAM working set**、更新間隔は1秒です。システム全体・GPU等の監視や、OBSテーマへの自然な追従は今後の開発対象です。実機での検証済みリリースはまだありません。
+初期版では **システムのCPU/RAM、OBSプロセスのCPU/RAM、GPUごとの使用率と専用メモリ** を表示します。標準Qt WidgetsでOBSのテーマに追従し、計測はGUI外で約1秒間隔、dockを隠すと休止します。取得できない指標はゼロと区別します。
+
+対象は **Windows x64 / OBS Studio 32.2.2** です。[導入・使い方](docs/using-monitor.md)、[計測仕様と制限](docs/metrics.md)、[実機受入と確認条件](https://github.com/shinma06/obs-process-monitor/issues/8) を参照してください。検証用ZIPはGitHub Actionsのartifactで提供し、公開Releaseとinstallerはまだありません。
 
 ## 開発を始める
 
@@ -22,12 +24,18 @@ bootstrapは実行に使ったPythonをローカルGit設定に保存します�
 - [試験記録](docs/verification/README.md) / [GUI予約・引継ぎ](docs/operations.md)
 - [環境セットアップ](docs/setup/README.md) / [導入内容と差分](docs/inventory.md) / [初回導入記録](docs/harness-adoption.md)
 
-## ビルドの現在地
+## Windows ビルド
 
-このcheckout単体ではまだビルドできません。CMakeが参照する `cmake/common/bootstrap.cmake` とWindows用presetが欠けており、buildspecには未確定のhashがあります。旧READMEの公式templateへ上書きする手順は、検証済みの再現手順ではありません。
+OBS 32.2.2 / Qt 6.11.1 / Windows x64 を対象に、公式 OBS helper と SHA-256 固定の依存を使います。Visual Studio 2026（MSVC 19.51.36260.0 / toolset 14.51）、Windows SDK 10.0.26100.0、CMake 4.4.3 が必要です。
 
-先に専用Issueで公式OBS plugin templateとの整合、依存版・hash固定、Windows CI、DLL生成を整備します。その後にOBSへのロード・テーマ・DPI・dockの受入を行います。ハーネスのCI成功は製品buildやGUIの合格を意味しません。
+```powershell
+cmake --preset windows-x64
+cmake --build --preset windows-x64 --parallel
+powershell -File scripts/package-windows.ps1
+```
+
+配布物は `out/package-*/` に生成され、`build-manifest.json` に source SHA・DLL SHA-256・実コンパイラ版を含みます。GitHub Actions の Windows plugin build も同じコマンドを実行します。[詳しい手順と取得失敗時の扱い](docs/build-windows.md)、[Issue #4 の検証記録](docs/verification/changes/issue-4.json) を参照してください。ハーネス成功、製品 build 成功、OBS 実機受入はそれぞれ区別して記録します。
 
 ## ソース
 
-`plugin-main.cpp` はOBS moduleとdock、`ProcessMonitorWidget.cpp` / `.hpp` はWin32計測とQt Widgets表示、`plugin-macros.h.in` は生成ヘッダーを担当します。ソースはリポジトリ直下にあります。
+`plugin-main.cpp` はOBS moduleとdock、`ProcessMonitorWidget.cpp` / `.hpp` はQt Widgets表示、`src/metrics/` はWin32の計測、`src/ui/` はsnapshot workerと値の整形を担当します。言語ファイルは `data/locale/`、計算・worker・表示の試験は `tests/` にあります。

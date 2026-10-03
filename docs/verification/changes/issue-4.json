@@ -1,0 +1,63 @@
+{
+  "issue": 4,
+  "integration": "develop",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。このIssue固有の過去CLI/review証拠は保持し、現在候補の実機受入はfinal_candidate_acceptanceを参照。追加範囲#13はpending。",
+  "cases": [
+    {
+      "id": "windows-fresh-build",
+      "steps": [
+        "fresh Windows checkout で cmake --preset windows-x64",
+        "cmake --build --preset windows-x64",
+        "scripts/package-windows.ps1"
+      ],
+      "expected": "OBS 32.2.2 / Qt 6.11.1 / MSVC 19.51 / SDK 10.0.26100.0 で DLL と source SHA / DLL SHA256 を生成する",
+      "status": "pass",
+      "evidence": "2026-10-02 GitHub Actions run 37012059846 / job 110853903922 が fresh checkout から configure、DLL build、package 成功。source 4e349737aaef60b8a76fb2e8e0b460a481f97888、DLL SHA256 dfc8095eac1b5f401319cbc1f9ae6bcd4eeb681a0a7d9d9b03bedd7ac9a0298c、package SHA256 f623058e77f8e594e042e628c8e48bb32dbac13bd2c0226caa050fa4b98890c3。artifact 11228442746 を取得してローカル hash を照合。MSVC 19.51.36260.0 / runner 20260925.250.1。続く packaging identity 修正後の最終 HEAD CI は PR #9 で確認する。 最終HEAD 7a6f50bfa878a3cf9825ca0fda1c6ee7af2c828dはrun 37012782449でもbuild/package成功。DLL SHA256 29ac58172e4364d9292ddfeb5bd79fbe7e4e4595e000290c5bb129de1fc23684。"
+    },
+    {
+      "id": "dependency-integrity",
+      "steps": [
+        "cmake -P scripts/test-dependency-hash.cmake",
+        "fresh CI configure で全依存 archive の固定 hash を照合"
+      ],
+      "expected": "一致する archive のみ使用し、取得失敗・SHA256 不一致は停止する",
+      "status": "pass",
+      "evidence": "run 37012059846 で fresh な各依存 archive の取得・SHA256 検証成功。cmake -P scripts/test-dependency-hash.cmake が一致 fixture を許可し、不一致の保存済み fixture を明示エラーで拒否。"
+    },
+    {
+      "id": "harness-checks",
+      "steps": [
+        "python scripts/check.py"
+      ],
+      "expected": "既存ハーネスの構文・リンク・秘密候補・hooks 回帰が成功する",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows local check.py（10 tests / POSIX 専用1 skip）と PR #9 の Windows/Linux CI 成功。最終 HEAD は PR checks を参照。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "固定 HEAD/base を別セッションへ渡す"
+      ],
+      "expected": "コード・Case・依存ライセンス・配布構造を確認し未解決指摘がない",
+      "status": "pass",
+      "evidence": "PM /root がwriter build-agentと別セッションでHEAD 7a6f50bfa878a3cf9825ca0fda1c6ee7af2c828d / base 54678719d1df191801fe4689686200adf93d160bをレビュー。旧DLL梱包の初回指摘を解消、未解決指摘なし。PR #9 review 5392315511。"
+    },
+    {
+      "id": "obs-load",
+      "steps": [
+        "識別済み package を OBS 32.2.2 の QA 環境に展開し、source SHA をログから照合",
+        "dock 表示と OBS 終了を確認"
+      ],
+      "expected": "DLL がロードされ、dock 登録・解放が成功する",
+      "status": "pass",
+      "evidence": "2026-10-02 PM /root。Windows11 x64、portable OBS32.2.2、source 7a6f50bfa878a3cf9825ca0fda1c6ee7af2c828d。実ロードmoduleのDLL hash 29ac58172e4364d9292ddfeb5bd79fbe7e4e4595e000290c5bb129de1fc23684を照合。Docksメニュー登録と旧CPU/RAM UI表示、通常終了、unloadedログ、プロセス消滅を確認。証拠 https://github.com/shinma06/obs-process-monitor/issues/8#issuecomment-5953486256 。#6/#7の新UI受入はこの結果で代替しない。"
+    }
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "issue": 8
+  }
+}

@@ -43,7 +43,9 @@ Issueは具体作業、Projectは全体表示、Milestoneは到達目標にし�
 
 対象repositoryは `shinma06/obs-process-monitor`、統合branchはdevelopとmainです。初回tooling PRはmainへ統合し、専用同期PRでdevelopへ反映します。mainのdefault branch設定は維持します。
 
-実装したjob名は `harness-checks (ubuntu-latest)` と `harness-checks (windows-latest)` です。branch rulesetはPR必須・会話解決・削除禁止・非fast-forward禁止・この2つのstrict required checksを設定し、checkの発行元をGitHub Actionsへ固定します。製品のdevelop統合とmain toolingはsquash、main promotionとmain→developの同期は履歴を保持するmerge commitを使います。rulesetはsquash/mergeを許可し、この使い分けはレビューで確認します。未実装のcheck名は登録しません。
+両branchのharness jobは `harness-checks (ubuntu-latest)` と `harness-checks (windows-latest)` です。branch rulesetはPR必須・会話解決・削除禁止・非fast-forward禁止・strict required checksを設定し、checkの発行元をGitHub Actionsへ固定します。2026-10-02、実行成功を確認した `windows-build (OBS 32.2.2, x64)` をdevelopとmainのrequired checksへ追加し、実適用を読み戻しました。このjobはDLL build、登録されたCTest、package、依存hash試験を行います。
+
+製品のdevelop統合とmain toolingはsquash、main promotionとmain→developの同期は履歴を保持するmerge commitを使います。rulesetはsquash/mergeを許可し、この使い分けはレビューで確認します。未実装のcheck名は登録しません。
 
 2026-10-02に両OSのCI成功を確認し、[main ruleset](https://github.com/shinma06/obs-process-monitor/rules/24364287) と [develop ruleset](https://github.com/shinma06/obs-process-monitor/rules/24364288) をactiveで適用しました。bypass actorは空です。両branchへの実適用もAPIでreadbackしました。同一アカウントの独立セッションレビューのため、別GitHubユーザーの必須Approve数は0、独立レビュー自体は運用上必須です。
 

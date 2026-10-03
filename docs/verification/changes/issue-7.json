@@ -1,0 +1,90 @@
+{
+  "issue": 7,
+  "integration": "develop",
+  "gui": "pass",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。このIssue固有の過去CLI/review証拠は保持し、現在候補の実機受入はfinal_candidate_acceptanceを参照。追加範囲#13はpending。",
+  "references": [
+    "https://github.com/shinma06/obs-process-monitor/issues/5",
+    "https://github.com/shinma06/obs-process-monitor/issues/8",
+    "https://github.com/obsproject/obs-studio/blob/master/frontend/widgets/OBSBasicStats.cpp"
+  ],
+  "cases": [
+    {
+      "id": "harness-and-locale",
+      "steps": [
+        "新規ファイルをstageする",
+        "python scripts/check.py を実行する"
+      ],
+      "expected": "harnessとen-US/ja-JPのkey/placeholder対応が成功する",
+      "status": "pass",
+      "evidence": "2026-10-02 Windows / Python 3.12: scripts/check.py成功。11件、POSIX専用1件skip。locale key/placeholder対応を含む。GUI passではない。"
+    },
+    {
+      "id": "synthetic-presentation-and-worker",
+      "steps": [
+        "CMakeでUI試験をbuildする",
+        "synthetic metric presentationとsnapshot workerのCTestを実行する"
+      ],
+      "expected": "単位・分母・初回/非対応/失敗・欠損total・異常数値を正しく表示し、GUI外で計測、pause/resumeでbaselineをreset、in-flight終了をjoin、失敗後回復する",
+      "status": "pass",
+      "evidence": "固定HEAD 901585b7419ad5a91ba2d32c5c69afcf8f5e0b83: Windows run37014635327 job110862380182のui-presentation/ui-workerを含む全4 CTest成功。合成の初回・非対応・取得不可・stale・in-flight世代・pause/resume・join・失敗回復を確認。実機再現とは区別。 依存修正後の統合候補b02はrun37077824712/job111071546097で同じ4 CTest/build/package成功。新GUI受入は docs/verification/mvp-2026-10-03.md。 最終99f候補はWindows37088286869/job111102967005の最終package4 CTest成功。実機受入は docs/verification/mvp-2026-10-03-package.md。"
+    },
+    {
+      "id": "windows-build",
+      "steps": [
+        "固定したWindows/OBS/Qt依存でnative DLLをbuildする"
+      ],
+      "expected": "C++/Qt/OBS の compile/link と package が成功する",
+      "status": "pass",
+      "evidence": "固定HEAD 901585b7419ad5a91ba2d32c5c69afcf8f5e0b83: Windows run37014635327成功。OBS32.2.2 / Qt6.11.1 / MSVC19.51.36260.0、DLL SHA-256 452317326dcc4e1592571abfef846af27fa09652ed32b80cda46450ed5f29c3b。統合候補744a6281ac298b7042b09a10cdef74e768dd080eの別buildもrun37015281867で4 CTest/build/package成功。 依存修正後の統合候補b02はrun37077824712/job111071546097で同じ4 CTest/build/package成功。新GUI受入は docs/verification/mvp-2026-10-03.md。 最終99f候補はWindows37088286869/job111102967005の最終package4 CTest成功。実機受入は docs/verification/mvp-2026-10-03-package.md。"
+    },
+    {
+      "id": "native-theme-dpi-resize",
+      "steps": [
+        "QA #8で同一source SHA/DLL SHA-256のportable OBSを開く",
+        "標準Stats dockと並置し対応テーマを切り替える",
+        "Windows実OS100/150/200% DPI、狭幅・拡大・短いviewport・float/re-dockを試す。Qt限定スケールの補助試験は別に記録する",
+        "TabキーでGPU選択に到達し、複数adapterなら選択を変える"
+      ],
+      "expected": "OBS font/palette/spacingに追従し、数値と単位と状態が欠けず、縦scrollと折り返しで読める。テーマ変更後も固定色やfontを持たない",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。標準Stats並置、Yami Default darkからLightへのアプリ内変更、ja-JP/en-US、約157px狭幅から350px復元、単位折返し・縦scroll・横scrollbar、float/re-dockを観察。GPUからShift+Tab後のDownは選択を変えずscrollを0→20へ移し、続くTab→Upで追加クリックなしにAMD→NVIDIAへ切替。実Windows100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light起動、200%日本語dark起動、GPU/単位/更新時刻までscroll、200%float/再ドックを確認。主モニター100%・2560x1440横向きを復元・読戻し。"
+    },
+    {
+      "id": "live-states-and-lifecycle",
+      "steps": [
+        "QA #8で初回・通常実負荷・真のzeroを観察し、非対応/取得失敗/回復は合成CTestと区別して照合する",
+        "dockの非表示/再表示を繰り返す",
+        "OBSを終了して再起動する"
+      ],
+      "expected": "初回/非対応/取得不可を文字で区別し、欠損を0%にしない。CPUは再表示時の差分基準から再計測し、workerが安全に終了してhang/crashしない",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。AMDの実測0.0%と6.7/485.8MiB、NVIDIAの非zeroと15.7GiB総量を確認。録画中の非表示/再表示、200%float直後の計測中・GPU確認中と旧fill消去、実測への復帰を観察。unavailable/unsupported/stale/異常値/例外回復/in-flight終了は同候補の合成CTestで確認。空engine typeは84 checksの合成回帰で、該当実driver障害を再現したとは扱わない。Color Source・音声mute、720p30/NVENC H.264 CBR6000/AAC160で228.578秒録画し正常停止。Stats render lag0/20420、encode lag0/6856。表示/非表示各30秒のOBS全体CPUは1.3149%/0.7419%、working set286.91/271.98MiB。差+0.5731 percentage pointsは他アプリ稼働中の単一ホスト・単純scene・単回参考値でplugin単独効果や配信性能ではない。3起動とも通常終了、unloaded、memory leaks0、process消失。OBS/設定のウィンドウ消失とGUI lease解放済み。 旧99fの履歴はdocs/verification/mvp-2026-10-03-package.md。"
+    },
+    {
+      "id": "recording-streaming-overhead",
+      "steps": [
+        "初期版はQA #8で同条件のローカル録画をdock非表示/表示で比較し、長時間/複雑scene/配信は#13で追加検証する",
+        "OBS応答性とrender lag・CPU追加負荷を観測する"
+      ],
+      "expected": "1Hzのバックグラウンド計測が、確認したローカル録画条件でUI応答や録画を阻害しない。一般性能や配信の保証と区別する",
+      "status": "pass",
+      "evidence": "2026-10-03 PM /root、QA #8。source 689a46291bc80e2f5a1a995b75227ba0acb89495 / DLL 8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812。詳細 docs/verification/mvp-2026-10-03-final.md。Color Source・音声mute、720p30/NVENC H.264 CBR6000/AAC160で228.578秒録画し正常停止。Stats render lag0/20420、encode lag0/6856。表示/非表示各30秒のOBS全体CPUは1.3149%/0.7419%、working set286.91/271.98MiB。差+0.5731 percentage pointsは他アプリ稼働中の単一ホスト・単純scene・単回参考値でplugin単独効果や配信性能ではない。3起動とも通常終了、unloaded、memory leaks0、process消失。OBS/設定のウィンドウ消失とGUI lease解放済み。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "writerとは別sessionに固定HEAD/baseとIssue受入を渡す"
+      ],
+      "expected": "未解決の具体的コード欠陥0、必要CLI試験の成功、残GUI CaseのQA引継ぎを確認する",
+      "status": "pass",
+      "evidence": "build-agent（writer ui-agentと別session）がHEAD901585b7419ad5a91ba2d32c5c69afcf8f5e0b83 / base95d8cf9d9bde3a91be00ca25cda790ed2bca3820をレビュー。14変更ファイル/呼出関係、worker寿命/世代/stale/例外、native UI/locale/accessibility、module/CMakeを確認、具体的な指摘なし。独立worker実行とCI読戻し成功。PR #10 review5392541131。"
+    }
+  ],
+  "final_candidate_acceptance": {
+    "source_sha": "689a46291bc80e2f5a1a995b75227ba0acb89495",
+    "dll_sha256": "8923421a5e7668ee0367e3f53875ba5fce9416d8e88b207b21303cc4a553d812",
+    "evidence_report": "docs/verification/mvp-2026-10-03-final.md",
+    "issue": 8
+  }
+}
