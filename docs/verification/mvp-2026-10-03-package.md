@@ -22,7 +22,7 @@ Windows CIではPS5.1/7各20入力・失敗境界ケース、実CMakeのcache/�
 
 ## 表示と操作
 
-System CPU/RAM、OBS CPU/working set、GPU使用率/専用メモリと更新時刻が継続更新しました。NVIDIAの非zero使用率と15.7GiB総量、AMDの正常な0.0%と6.7/485.8MiBを確認。矢印キーとEnterでadapterを切り替えました。Tabによるパネル外への移動も確認しましたが、Shift+Tabの戻り先は明確に確認できず、成功の証拠には含めません。
+System CPU/RAM、OBS CPU/working set、GPU使用率/専用メモリと更新時刻が継続更新しました。NVIDIAの非zero使用率と15.7GiB総量、AMDの正常な0.0%と6.7/485.8MiBを確認。矢印キーとEnterでadapterを切り替えました。当初Tab到達の証拠が不十分だったため、独立レビューを受け同一DLLで補足しました。補足実機検証（同一99f DLL、100%日本語dark）で、GPU選択からShift+Tab後のDownは選択を変えずパネルを約20px縦scrollし、続くTab→UpでAMDからNVIDIAへ切り替わることを観察。GPU欄を再クリックせずTab到達と矢印選択を確認した。操作ツールのfocused_elementは期間欄の古い値を返したため、判定には操作前後の画面と実際の選択/scroll変化を用いた。
 
 標準Statsとの並置、Yami Default（内部名Original）darkからLightへのアプリ内変更、日本語/英語を確認。背景・文字・標準bar・選択色がOBSへ追従。約157pxの狭幅では単位が折り返し、縦scrollでGPU/更新時刻まで到達し、横scrollbarも表示されます。約350pxへ戻した表示も確認しました。
 
@@ -56,6 +56,8 @@ System CPU/RAM、OBS CPU/working set、GPU使用率/専用メモリと更新時�
 - 100%: ログ11-15-04、loaded11:15:05.422、unloaded11:22:34.915、leaks0（11:22:35.173）。
 - 150%: ログ11-24-14、loaded11:24:14.833、unloaded11:25:28.889、leaks0（11:25:29.126）。
 - 200%→100%: ログ11-26-19、loaded11:26:20.158、unloaded11:31:32.253、leaks0（11:31:32.486）。
+
+補足キーボード試験の4回目（100%、ログ11-45-11）は、loaded11:45:12.114、unloaded11:48:02.564、leaks0（11:48:02.807）。実moduleのパス、source99f、終了後のDLL hash不変とprocess消失を照合しました。DPI設定は変更していません。
 
 OBSとWindows設定の対象ウィンドウがないことを読戻し、GUI leaseを解放しました。画像・性能JSONL・生ログ・録画・manifestはprivateに保持し、repositoryへ個人情報や生ログを載せません。公開Caseは [#8](changes/issue-8.json) と [#18](changes/issue-18.json)。この識別済み候補について初期版の必要GUI Caseはpassです。文書の独立レビューとmain昇格の固定HEAD/base・必須CI・merge親は各PRで別途確認します。
 

@@ -2,7 +2,7 @@
   "issue": 7,
   "integration": "develop",
   "gui": "pass",
-  "gui_reason": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。標準Stats並置、Yami Default dark/Light、ja-JP/en-US、約157px狭幅から約350pxへの拡大、単位折返しと縦scroll、float/re-dock、タブ、矢印/EnterのGPU選択を観察。狭幅では横scrollbarも表示。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light、200%日本語darkで起動、値/単位/更新、GPUまでのscroll、200%float/re-dockと再表示、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。",
+  "gui_reason": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。標準Stats並置、Yami Default dark/Light、ja-JP/en-US、約157px狭幅から約350pxへの拡大、単位折返しと縦scroll、float/re-dock、タブ、矢印/EnterのGPU選択を観察。狭幅では横scrollbarも表示。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light、200%日本語darkで起動、値/単位/更新、GPUまでのscroll、200%float/re-dockと再表示、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。 補足100%キーボード試験でTab到達も実確認。",
   "references": [
     "https://github.com/shinma06/obs-process-monitor/issues/5",
     "https://github.com/shinma06/obs-process-monitor/issues/8",
@@ -48,7 +48,7 @@
       ],
       "expected": "OBS font/palette/spacingに追従し、数値と単位と状態が欠けず、縦scrollと折り返しで読める。テーマ変更後も固定色やfontを持たない",
       "status": "pass",
-      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。標準Stats並置、Yami Default dark/Light、ja-JP/en-US、約157px狭幅から約350pxへの拡大、単位折返しと縦scroll、float/re-dock、タブ、矢印/EnterのGPU選択を観察。狭幅では横scrollbarも表示。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light、200%日本語darkで起動、値/単位/更新、GPUまでのscroll、200%float/re-dockと再表示、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。"
+      "evidence": "2026-10-03 PM /root、QA #8。source 99f865252c2072441f91ddcb2309f9627015b850 / DLL ad4cb7cb4335021887a5a8fa49c6399f101e4105793279fda37fbb3794aa88f5。詳細 docs/verification/mvp-2026-10-03-package.md。標準Stats並置、Yami Default dark/Light、ja-JP/en-US、約157px狭幅から約350pxへの拡大、単位折返しと縦scroll、float/re-dock、タブ、矢印/EnterのGPU選択を観察。狭幅では横scrollbarも表示。実Windows主モニター100→150→200→100%、QT_SCALE_FACTOR=1。150%英語Light、200%日本語darkで起動、値/単位/更新、GPUまでのscroll、200%float/re-dockと再表示、100%復元後更新を確認。元の解像度/向きも読戻し。mixed-DPI移動は#13未観察。 補足実機検証（同一99f DLL、100%日本語dark）で、GPU選択からShift+Tab後のDownは選択を変えずパネルを約20px縦scrollし、続くTab→UpでAMDからNVIDIAへ切り替わることを観察。GPU欄を再クリックせずTab到達と矢印選択を確認した。操作ツールのfocused_elementは期間欄の古い値を返したため、判定には操作前後の画面と実際の選択/scroll変化を用いた。"
     },
     {
       "id": "live-states-and-lifecycle",
