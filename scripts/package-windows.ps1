@@ -21,23 +21,23 @@ try {
         # Paths can contain private names; keep them out of CI/public diagnostics.
         throw 'Commit or remove untracked files outside documented build output locations before packaging.'
     }
-    $buildInfo = Get-Content -LiteralPath 'build_x64/build-info.json' -Raw | ConvertFrom-Json
-    if ($buildInfo.source_sha -ne $sourceSha) { throw 'Reconfigure after changing HEAD before packaging.' }
-    # Discard cache settings left by an untracked CMake module from an earlier
-    # configure, even if that input was removed before this packaging attempt.
-    cmake --preset windows-x64 --fresh
-    if ($LASTEXITCODE -ne 0) { throw 'Fresh CMake configure failed; no package was created.' }
-    $buildInfo = Get-Content -LiteralPath 'build_x64/build-info.json' -Raw | ConvertFrom-Json
-    if ($buildInfo.source_sha -ne $sourceSha) { throw 'Fresh configure source revision does not match HEAD.' }
-    # A prior build may have compiled a now-removed untracked header. Recompile
-    # from the verified source tree rather than trusting incremental objects.
-    cmake --build --preset windows-x64 --parallel --clean-first
-    if ($LASTEXITCODE -ne 0) { throw 'CMake build failed; no package was created.' }
-    $spec = Get-Content -LiteralPath 'buildspec.json' -Raw | ConvertFrom-Json
+    # A reused build tree can contain arbitrary generated headers that neither
+    # --fresh nor a clean target removes. Give each package a new empty tree.
     $artifactDir = Join-Path $ProjectRoot ('out/package-' + [guid]::NewGuid().ToString('N'))
+    $buildDir = Join-Path $artifactDir 'build'
+    New-Item -ItemType Directory -Path $buildDir | Out-Null
+    cmake --preset windows-x64 -B $buildDir
+    if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed; no package was created.' }
+    $buildInfo = Get-Content -LiteralPath (Join-Path $buildDir 'build-info.json') -Raw | ConvertFrom-Json
+    if ($buildInfo.source_sha -ne $sourceSha) { throw 'Configured source revision does not match HEAD.' }
+    cmake --build $buildDir --config RelWithDebInfo --parallel
+    if ($LASTEXITCODE -ne 0) { throw 'CMake build failed; no package was created.' }
+    ctest --test-dir $buildDir -C RelWithDebInfo --output-on-failure --no-tests=error
+    if ($LASTEXITCODE -ne 0) { throw 'CTest failed; no package was created.' }
+    $spec = Get-Content -LiteralPath 'buildspec.json' -Raw | ConvertFrom-Json
     $stage = Join-Path $artifactDir 'stage'
-    New-Item -ItemType Directory -Path $stage -Force | Out-Null
-    cmake --install build_x64 --config RelWithDebInfo --prefix $stage
+    New-Item -ItemType Directory -Path $stage | Out-Null
+    cmake --install $buildDir --config RelWithDebInfo --prefix $stage
     if ($LASTEXITCODE -ne 0) { throw 'CMake install failed.' }
     $dll = Join-Path $stage 'obs-process-monitor/bin/64bit/obs-process-monitor.dll'
     if (!(Test-Path -LiteralPath $dll -PathType Leaf)) { throw 'The package DLL is missing.' }
@@ -55,10 +55,13 @@ try {
     }
     $manifest | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath (Join-Path $stage 'build-manifest.json') -Encoding utf8
     $package = Join-Path $artifactDir ('obs-process-monitor-' + $sourceSha.Substring(0,12) + '-windows-x64.zip')
-    Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $package
     $sources = Join-Path $artifactDir ('obs-process-monitor-' + $sourceSha.Substring(0,12) + '-source.zip')
-    git archive --format=zip --output=$sources HEAD
+    # Keep a failed native archive command outside the publishable artifact glob.
+    $sourceArchive = Join-Path $buildDir 'source.zip'
+    git archive --format=zip --output=$sourceArchive HEAD
     if ($LASTEXITCODE -ne 0) { throw 'Source archive failed.' }
+    Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $package
+    Move-Item -LiteralPath $sourceArchive -Destination $sources
     $hashes = foreach ($file in @($package, $sources)) {
         $hash = (Get-FileHash -LiteralPath $file -Algorithm SHA256).Hash.ToLowerInvariant()
         $hash + '  ' + (Split-Path -Leaf $file)

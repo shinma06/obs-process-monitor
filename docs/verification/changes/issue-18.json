@@ -10,18 +10,18 @@
         "powershell -File scripts/test-package-inputs.ps1",
         "base f19c785132660e735a25e58953ccfd0a2cd0179e のpackage scriptを -PackageScript / -ExpectLegacyLeaks で同じfixtureに渡す"
       ],
-      "expected": "未追跡のroot/nested header、data、CMake入力、ignore済み入力とtracked staged/unstaged差分を拒否する。既知生成物と限定Python cacheは許可し、実package entryはfresh configure後clean buildへ到達する。filenameを拒否ログに出さない。",
+      "expected": "未追跡/ignore済み製品入力と追跡差分を拒否し、既知生成物は許可する。汚れた旧build treeを残したまま新しい空treeを固定presetでconfigureし、同じtree/configでbuild/CTest/installへ進む。失敗時は次段階/公開artifactへ進まない。",
       "status": "pass",
-      "evidence": "2026-10-03 package-fix-agent / PowerShell 7.6.5 とWindows PowerShell 5.1 / local Windows。独立temp Gitで各15ケース成功。独立レビューのPS5.1 param既定値指摘は本文でpath補完する修正後に再実行した。旧baseでは11未追跡ケースがbuild境界へ到達し、tracked変更2ケースのみ拒否する漏れを再現。新scriptは全未追跡ケースをconfigure/build前に拒否。正常2・未追跡11・追跡差分2件。"
+      "evidence": "2026-10-03 package-fix-agent / Windows PowerShell5.1とPowerShell7.6.5各20ケース成功（正常2・未追跡11・追跡差分2・configure/identity/build/CTest/install失敗5）。実package scriptのnative境界を置換したtemp Git fixture。旧base f19c785132660e735a25e58953ccfd0a2cd0179eの15ケースで11未追跡入力の漏れを再現。旧build_x64/過去packageの残header/cacheを再利用しないこと、CTest失敗でinstall/ZIPへ進まないことを確認。実CMake/製品CTestは別Caseで追跡。"
     },
     {
       "id": "removed-cmake-input-cache",
       "steps": [
         "cmake -P scripts/test-package-cache.cmake"
       ],
-      "expected": "実CMakeでmodule削除後もcache値が通常configureに残り、--freshで消えることを確認する。",
+      "expected": "実CMakeでmodule削除後のcache値が通常configureに残り、生成headerが--fresh/clean後も残ること、新build treeがどちらも引き継がないことを確認する。",
       "status": "pending",
-      "evidence": "Owner: package-fix-agent / Windows CI。local hostにCMakeなし。CIの固定CMake 4.4.3で実行する。"
+      "evidence": "Owner: package-fix-agent / 最新Windows CI。local hostにCMakeなし。旧a533のcache-only試験passを拡張版へ転用しない。"
     },
     {
       "id": "windows-build-package",
@@ -29,7 +29,7 @@
         "fresh Windows CIの依存hash / 28 prefix回帰 / package入力回帰",
         "configure / 実package config 5件 / DLL build / 4 CTest / package"
       ],
-      "expected": "固定OBS 32.2.2 / Qt 6.11.1で成功し、fresh configureとclean build後のDLL/manifest/source identityが一致する。",
+      "expected": "固定OBS32.2.2 / Qt6.11.1で成功し、専用新treeのconfigure/build/4 CTest/install後のDLL/manifest/source identityが一致する。最終package内CTestのLastTest.logを証拠とし、先行build_x64試験だけを転用しない。",
       "status": "pending",
       "evidence": "Owner: package-fix-agent、push後のWindows CIを読戻す。"
     },
@@ -49,7 +49,7 @@
       ],
       "expected": "入力例外、cache/build順序、回帰をレビューし、未解決欠陥がない。",
       "status": "pending",
-      "evidence": "Owner: PM。writer停止・固定HEAD後に独立レビューする。"
+      "evidence": "Owner: PM。a533 review5398401279後の追加P1/P2（生成header残留、再build後の未試験）を修正中。新固定HEADで独立レビューと最新CIを確認する。"
     },
     {
       "id": "new-candidate-gui",
