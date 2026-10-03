@@ -1,6 +1,7 @@
 # Common build dependencies module
 # Modified 2026-10-03: bind dependency reuse/search to verified local prefixes; verify archives,
-# propagate the pinned toolset, and expose dependency build errors.
+# propagate the pinned toolset, separate archive storage from package extraction/build/install,
+# and expose dependency build errors.
 
 include_guard(GLOBAL)
 
@@ -90,6 +91,12 @@ endfunction()
 
 # _check_dependencies: Fetch and extract pre-built OBS build dependencies
 function(_check_dependencies)
+  # Existing developer callers keep trusted extraction reuse. Package callers
+  # select a private dependency root and share only hash-checked archive bytes.
+  if(NOT DEFINED dependency_archives_dir)
+    set(dependency_archives_dir "${dependencies_dir}")
+  endif()
+  file(MAKE_DIRECTORY "${dependencies_dir}" "${dependency_archives_dir}")
   file(READ "${CMAKE_CURRENT_SOURCE_DIR}/buildspec.json" buildspec)
 
   string(JSON dependency_data GET ${buildspec} dependencies)
@@ -138,22 +145,22 @@ function(_check_dependencies)
       set(url ${url}/${version}/${file})
     endif()
 
-    if(NOT EXISTS "${dependencies_dir}/${file}")
+    if(NOT EXISTS "${dependency_archives_dir}/${file}")
       message(STATUS "Downloading ${url}")
-      file(DOWNLOAD "${url}" "${dependencies_dir}/${file}" STATUS download_status EXPECTED_HASH SHA256=${hash})
+      file(DOWNLOAD "${url}" "${dependency_archives_dir}/${file}" STATUS download_status EXPECTED_HASH SHA256=${hash})
 
       list(GET download_status 0 error_code)
       list(GET download_status 1 error_message)
       if(error_code GREATER 0)
         message(STATUS "Downloading ${url} - Failure")
-        file(REMOVE "${dependencies_dir}/${file}")
+        file(REMOVE "${dependency_archives_dir}/${file}")
         message(FATAL_ERROR "Unable to download ${url}, failed with error: ${error_message}")
       else()
         message(STATUS "Downloading ${url} - done")
       endif()
     endif()
 
-    _verify_dependency_archive("${dependencies_dir}/${file}" "${hash}")
+    _verify_dependency_archive("${dependency_archives_dir}/${file}" "${hash}")
 
     set(reuse FALSE)
     if(dependency STREQUAL prebuilt OR dependency STREQUAL qt6)
@@ -169,9 +176,9 @@ function(_check_dependencies)
       file(REMOVE_RECURSE "${prefix}")
       file(MAKE_DIRECTORY "${prefix}")
       if(dependency STREQUAL obs-studio)
-        file(ARCHIVE_EXTRACT INPUT "${dependencies_dir}/${file}" DESTINATION "${dependencies_dir}")
+        file(ARCHIVE_EXTRACT INPUT "${dependency_archives_dir}/${file}" DESTINATION "${dependencies_dir}")
       else()
-        file(ARCHIVE_EXTRACT INPUT "${dependencies_dir}/${file}" DESTINATION "${prefix}")
+        file(ARCHIVE_EXTRACT INPUT "${dependency_archives_dir}/${file}" DESTINATION "${prefix}")
         _check_deps_version("${version}" "${prefix}")
         if(NOT found)
           message(FATAL_ERROR "Pinned ${label} archive has an invalid VERSION or package layout: ${prefix}")

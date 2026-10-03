@@ -26,7 +26,7 @@ try {
     $artifactDir = Join-Path $ProjectRoot ('out/package-' + [guid]::NewGuid().ToString('N'))
     $buildDir = Join-Path $artifactDir 'build'
     New-Item -ItemType Directory -Path $buildDir | Out-Null
-    cmake --preset windows-x64 -B $buildDir
+    cmake --preset windows-x64 -B $buildDir '-DOBS_PLUGIN_PACKAGE_BUILD:BOOL=ON'
     if ($LASTEXITCODE -ne 0) { throw 'CMake configure failed; no package was created.' }
     $buildInfo = Get-Content -LiteralPath (Join-Path $buildDir 'build-info.json') -Raw | ConvertFrom-Json
     if ($buildInfo.source_sha -ne $sourceSha) { throw 'Configured source revision does not match HEAD.' }

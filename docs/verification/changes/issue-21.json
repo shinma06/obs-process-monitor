@@ -1,0 +1,77 @@
+{
+  "issue": 21,
+  "integration": "develop",
+  "gui": "pending",
+  "gui_reason": "package依存の再生成で別DLLになるため、PMが#22と統合後の最終同一DLLをQA #8で再受入する。旧候補のpassを転用しない。main #14は新候補の必要Case完了まで保留。",
+  "cases": [
+    {
+      "id": "package-input-boundary",
+      "steps": [
+        "powershell -NoProfile -File scripts/test-package-inputs.ps1",
+        "pwsh -NoProfile -File scripts/test-package-inputs.ps1"
+      ],
+      "expected": "入力検査・新build tree・configure/build/CTest/install失敗の既存20ケースを維持し、package configureが専用依存modeを明示する。",
+      "status": "pass",
+      "evidence": "2026-10-03 package-fix-agent / Windows PowerShell5.1とPowerShell7.6.5各20ケース成功。colon付きCMake定義をquoted argumentとして渡し、fixtureで正確なflagを確認した。"
+    },
+    {
+      "id": "dependency-isolation",
+      "steps": [
+        "cmake -P scripts/test-package-dependencies.cmake"
+      ],
+      "expected": "改変済みprebuilt/Qt/OBS source/object/installed libraryが通常開発では再利用される旧境界を再現し、package専用treeではarchiveから再生成して継承しない。共有archiveのhash不一致3種は拒否する。",
+      "status": "pending",
+      "evidence": "Owner: package-fix-agent / 最新Windows CI。7シナリオの小ZIP・実Windows依存helper fixture。OBS compile部分だけ境界assertに置換し、実OBS buildは製品CIで別途確認。localにCMakeなし。"
+    },
+    {
+      "id": "existing-dependency-regression",
+      "steps": [
+        "cmake -P scripts/test-dependency-hash.cmake",
+        "cmake -P scripts/test-dependency-prefix.cmake",
+        "cmake -P scripts/test-package-cache.cmake"
+      ],
+      "expected": "archive hash拒否、既存28 prefix/cacheケース、plugin新build treeによる任意生成header非継承を維持する。",
+      "status": "pending",
+      "evidence": "Owner: package-fix-agent / 最新Windows CI。旧#18のpassを今回へ転用しない。"
+    },
+    {
+      "id": "windows-build-package",
+      "steps": [
+        "Windows CIで通常configure/build/4 CTestを実行",
+        "packageの新plugin/dependency treeでOBSとDLLをbuildし、最終4 CTest/install/packageを実行",
+        "最終package内のQt/OBS config 5件とCMake cacheの専用dependency rootを照合"
+      ],
+      "expected": "固定OBS32.2.2/Qt6.11.1と既定toolchainで成功し、最終DLL/source SHA/manifest/hashが一致する。最終packageのLastTest.logを試験証拠にする。",
+      "status": "pending",
+      "evidence": "Owner: package-fix-agent / 最新Windows CI。push後にrun/job/artifactを確認する。"
+    },
+    {
+      "id": "harness",
+      "steps": [
+        "python scripts/check.py"
+      ],
+      "expected": "既存harness検証が成功する。",
+      "status": "pass",
+      "evidence": "2026-10-03 package-fix-agent / Windows local、11 tests / POSIX専用1 skip、成功。push hookでも再検査する。"
+    },
+    {
+      "id": "independent-review",
+      "steps": [
+        "固定HEAD / base 3d7aad7e9e306fd1a33d8cf3e4f9946e0fbe47b3をPM別セッションへ渡す"
+      ],
+      "expected": "archiveだけを共有するpackage入力境界と回帰の意味を確認し、未解決指摘がない。",
+      "status": "pending",
+      "evidence": "Owner: PM。writer停止・固定HEAD後に独立レビュー。"
+    },
+    {
+      "id": "new-candidate-gui",
+      "steps": [
+        "#21/#22統合後にQA #8で最終source SHA / DLL SHA256 / CI runを固定",
+        "PMが予約済みportable OBSで実ロードと既存GUI Caseを再観察"
+      ],
+      "expected": "同じ識別済み最終DLLで必要Caseを満たした後にmain #14を昇格する。",
+      "status": "pending",
+      "evidence": "Owner: PM / QA #8。旧99f/b02等のGUI passは転用しない。初期OBS/Windows/Qt環境・操作・期待はQA #8とdocs/verification/mvp-2026-10-03.mdを参照し、両修正のdevelop統合/CI後に新artifact取得から再開。"
+    }
+  ]
+}
